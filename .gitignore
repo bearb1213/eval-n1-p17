@@ -8,7 +8,7 @@
 .env
 .env.local
 .env.*.local
-index.csv
+**/index.csv
 # Cache et logs
 
 **/var/cache/**
