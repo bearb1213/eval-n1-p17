@@ -1,0 +1,32 @@
+<?php
+/* Smarty version 4.3.4, created on 2026-05-05 12:58:31
+  from 'module:ps_customtextps_customtext.tpl' */
+
+/* @var Smarty_Internal_Template $_smarty_tpl */
+if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
+  'version' => '4.3.4',
+  'unifunc' => 'content_69f9bf474dde46_80780967',
+  'has_nocache_code' => false,
+  'file_dependency' => 
+  array (
+    '8654b2ba7ef103395c5eb0a4a12ed7463d291bc8' => 
+    array (
+      0 => 'module:ps_customtextps_customtext.tpl',
+      1 => 1673877530,
+      2 => 'module',
+    ),
+  ),
+  'includes' => 
+  array (
+  ),
+),false)) {
+function content_69f9bf474dde46_80780967 (Smarty_Internal_Template $_smarty_tpl) {
+$_smarty_tpl->compiled->nocache_hash = '208081273369f9bf474dc377_21494077';
+?>
+<!-- begin D:\prog\eval\eval_n1\prestashop/modules/ps_customtext/ps_customtext.tpl -->
+<div id="custom-text">
+  <?php echo $_smarty_tpl->tpl_vars['cms_infos']->value['text'];?>
+
+</div>
+<!-- end D:\prog\eval\eval_n1\prestashop/modules/ps_customtext/ps_customtext.tpl --><?php }
+}
