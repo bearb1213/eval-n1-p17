@@ -8,12 +8,12 @@
 .env
 .env.local
 .env.*.local
-
+index.csv
 # Cache et logs
 
-/var/cache/
-/var/log/
-/var/sessions/
+**/var/cache/**
+**/var/log/**
+**/var/sessions/**
 
 # Fichiers générés
 
