@@ -1,0 +1,71 @@
+# Dossiers de dépendances
+
+#/vendor/
+/node_modules/
+
+# Fichiers d'environnement (sensibles)
+
+.env
+.env.local
+.env.*.local
+
+# Cache et logs
+
+/var/cache/
+/var/log/
+/var/sessions/
+
+# Fichiers générés
+
+/public/bundles/
+/public/build/
+
+# Uploads (si tu stockes des fichiers utilisateurs)
+
+# ⚠️ adapte selon ton projet
+
+/public/uploads/
+
+# Fichiers IDE / éditeurs
+
+/.idea/
+/.vscode/
+/*.swp
+*.swo
+
+# OS
+
+.DS_Store
+Thumbs.db
+
+# PHPUnit
+
+.phpunit.result.cache
+
+# Composer
+
+composer.phar
+
+# Symfony CLI
+
+.symfony.local.yaml
+
+# Docker (optionnel)
+
+docker-compose.override.yml
+
+# Webpack Encore
+
+/node_modules/
+/public/build/
+
+# Fichiers temporaires
+
+*.log
+*.tmp
+*.bak
+
+# Certificats locaux (HTTPS)
+
+*.crt
+*.key
