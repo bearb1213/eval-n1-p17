@@ -1,5 +1,5 @@
-import {saveTax , getTaxNameAndId } from "../tax/TaxApi";
-import {saveTaxRuleGroup , getTaxRuleGroupNameAndId} from "../tax/TaxRuleGroupApi";
+import {saveTax } from "../tax/TaxApi";
+import {saveTaxRuleGroup } from "../tax/TaxRuleGroupApi";
 import {saveTaxRule} from "../tax/TaxRuleApi";
 
 const id_country = 8;
@@ -17,8 +17,7 @@ async function getTaxes(file){
 async function getTaxesInit(file) {
     const taxes = await createTaxes(file);
     // console.log("Created taxes:", taxes);
-    await saveTaxes(taxes);
-    const taxesWithId = await setTaxIds(taxes);
+    const taxesWithId = await saveTaxes(taxes);
     return taxesWithId;
 }
 
@@ -44,41 +43,26 @@ async function createTaxes(file){
 }
 
 async function saveTaxes(taxes) {
+    const savedTaxes = [];
     for (const tax of taxes) {
         try {
-            await saveTax(tax);
+            const savedTax = await saveTax(tax);
+            savedTaxes.push({
+                ...tax,
+                id: savedTax.id,
+                name: tax.name.language[0]["#text"]
+            });
         } catch (e) {
             console.log(`Error saving tax ${tax.name.language["#text"]}:`, e);
         }
     }
-}
-
-async function setTaxIds(taxes){
-    const taxMap = await getTaxNameAndId();
-
-    const taxesWithId = taxes.map(tax => { 
-        const foundTax = taxMap.find(t => t.name === tax.name.language[0]["#text"]);
-        if (foundTax) {
-            return { ...tax, 
-                id: foundTax.id , 
-                name: foundTax.name , 
-            };
-        } else {
-            console.log(`Tax not found for name: ${tax.name.language[0]["#text"]}`);
-            return tax;
-        }
-        return tax;
-    });
-
-    return taxesWithId;
-
+    return savedTaxes;
 }
 
 // TAXE RULE GROUPS
 async function getTaxRuleGroups(taxes){
     const taxRuleGroups = await createTaxRuleGroups(taxes);
-    await saveTaxRuleGroups(taxRuleGroups);
-    const taxRuleGroupsWithId = await setTaxRuleGroupIds(taxRuleGroups);
+    const taxRuleGroupsWithId = await saveTaxRuleGroups(taxRuleGroups);
     return taxRuleGroupsWithId;
 }
 
@@ -92,29 +76,16 @@ async function createTaxRuleGroups(taxes){
     return retour;
 }
 async function saveTaxRuleGroups(taxRuleGroups) {
+    const savedTaxRuleGroups = [];
     for (const taxRuleGroup of taxRuleGroups) {
         try {
-            await saveTaxRuleGroup(taxRuleGroup);
+            const savedTaxRuleGroup = await saveTaxRuleGroup(taxRuleGroup);
+            savedTaxRuleGroups.push({ ...taxRuleGroup, id: savedTaxRuleGroup.id });
         } catch (e) {
             console.log(`Error saving tax rule group ${taxRuleGroup.name}:`, e);
         }
     }
-}
-async function setTaxRuleGroupIds(taxRuleGroups){
-    const taxRuleGroupMap = await getTaxRuleGroupNameAndId();
-    const taxRuleGroupsWithId = taxRuleGroups.map(trg => {
-        const foundTrg = taxRuleGroupMap.find(t => t.name === trg.name);
-        if (foundTrg) {
-            return { ...trg, 
-                id: foundTrg.id , 
-                name: foundTrg.name , 
-            };
-        } else {
-            console.log(`Tax rule group not found for name: ${trg.name}`);
-            return trg;
-        }
-    });
-    return taxRuleGroupsWithId;
+    return savedTaxRuleGroups;
 }
 
 // TAX RULES 
@@ -137,13 +108,16 @@ async function createTaxRules(taxes, taxRuleGroups){
     return taxRules;
 } 
 async function saveTaxRules(taxRules) {
+    const savedTaxRules = [];
     for (const taxRule of taxRules) {
         try {
-            await saveTaxRule(taxRule);
+            const savedTaxRule = await saveTaxRule(taxRule);
+            savedTaxRules.push({ ...taxRule, id: savedTaxRule.id });
         } catch (e) {
             console.log(`Error saving tax rule for tax ${taxRule.description}:`, e);
         }
     }
+    return savedTaxRules;
 }
 
 // join les ids

@@ -1,7 +1,10 @@
 import {ApiAction} from "../util/ApiAction.js";
-import {XMLParser} from "fast-xml-parser";
+import {XMLParser,XMLBuilder} from "fast-xml-parser";
 
 const xmlToJson =  new XMLParser({ignoreAttributes: false});
+const jsonToXml = new XMLBuilder({ignoreAttributes: false,
+                                format: true,
+                                cdataPropName: "#text"});
 const apiUrl = "/carts"
 
 async function getAllCarts() {
@@ -29,7 +32,7 @@ async function deleteCart(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.cart;
     } catch (e) {
         console.log(e);
         throw e;
@@ -76,5 +79,53 @@ async function deleteAllCarts() {
         throw e;
     }
 }
+async function saveCart(cart){
+    try {
+        const cartXml = jsonToXml.build(
+            {
+                prestashop: {
+                    "@_xmlns:xlink": "http://www.w3.org/1999/xlink",
+                    cart: cart
+                }
+            }
+        );
+        // console.log("XML to send : \n");
+        // console.log(cartXml);
+        const result = await ApiAction(
+            apiUrl ,
+            "POST" ,
+            {},
+            cartXml
+        );
+        const json = xmlToJson.parse(result);
+        return json.prestashop.cart;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
+async function getCartDisplayFull(){
+    try{
+        const result = await ApiAction(
+            apiUrl ,
+            "GET" ,
+            {"display":"full"})
+        const json = xmlToJson.parse(result);
+        const carts = json.prestashop.carts.cart;
+        // console.log(carts);
 
-export {getAllCarts , deleteCart, getAllIdCarts, deleteAllCarts};
+        return carts;
+    } catch (e) {
+        console.log(e)
+        throw e;
+    }
+}
+
+export {
+    getAllCarts , 
+    deleteCart, 
+    getAllIdCarts, 
+    deleteAllCarts,
+    saveCart,
+    getCartDisplayFull,
+};

@@ -104,7 +104,7 @@ async function saveCategory(category) {
             categoryXml,
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.category;
     } catch (e) {
         console.log(e);
         throw e;

@@ -33,7 +33,7 @@ async function deleteTax(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.tax;
     } catch (e) {
         console.log(e);
         throw e;
@@ -97,7 +97,7 @@ async function saveTax(tax) {
             taxXml,
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.tax;
     } catch (e) {
         console.log(e);
         throw e;

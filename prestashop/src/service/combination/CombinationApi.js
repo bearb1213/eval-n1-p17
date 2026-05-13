@@ -33,7 +33,7 @@ async function deleteCombination(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.combination;
     } catch (e) {
         console.log(e);
         throw e;
@@ -98,7 +98,7 @@ async function saveCombination(combination) {
             combinationXml
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.combination;
 
     } catch (error) {
         console.log(error);

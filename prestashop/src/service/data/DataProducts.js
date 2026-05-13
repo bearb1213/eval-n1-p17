@@ -1,11 +1,9 @@
-import { saveProduct , getProductNameAndId} from "../product/ProductApi";
+import { saveProduct } from "../product/ProductApi";
 // Product -- fonction principale
 
 async function getProducts(file1  , categories , taxes){
     const products = await createProducts(file1, categories , taxes);
-    await saveProducts(products);
-    const productsWithId = await setProductIds(products);
-
+    const productsWithId = await saveProducts(products);
     return productsWithId;
 }
 
@@ -55,9 +53,10 @@ async function createProducts(file1, categories , taxes) {
 }
 
 async function saveProducts(products) {
+    const savedProducts = [];
     for (const product of products) {
         try {
-            await saveProduct({
+            const savedProduct = await saveProduct({
                 name: product.name,
                 reference: product.reference,
                 available_date: product.available_date,
@@ -71,30 +70,12 @@ async function saveProducts(products) {
                 id_category_default: product.id_category_default,
                 associations: product.associations
             });
+            savedProducts.push({ ...product, id: savedProduct.id });
         } catch (e) {
             console.log(`Error saving product ${product.name.language["#text"]}:`, e);
         }
     }
-}
-
-async function setProductIds(products) {
-    const productMap = await getProductNameAndId();
-    const productsWithId = products.map(product => {
-        const foundProduct = productMap.find(p => p.name === product.name.language["#text"]);
-        if (foundProduct) {
-            return { ...product, 
-                name : product.name.language["#text"],
-                id: foundProduct.id 
-            };
-        } else {
-            console.log(`Product not found: ${product.name.language["#text"]}`);
-            return {
-                ...product,
-                name : product.name.language["#text"],
-            }; 
-        }
-    });
-    return productsWithId;
+    return savedProducts;
 }
 
 

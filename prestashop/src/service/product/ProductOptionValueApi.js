@@ -33,7 +33,7 @@ async function deleteProductOptionValue(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.product_option_value;
     } catch (e) {
         console.log(e);
         throw e;
@@ -98,7 +98,7 @@ async function saveProductOptionValue(productOptionValue) {
             optionValuesXml
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.product_option_value;
     } catch (e) {
         console.log(e);
         throw e;

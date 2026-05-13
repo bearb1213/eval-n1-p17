@@ -1,7 +1,10 @@
 import {ApiAction} from "../util/ApiAction.js";
-import {XMLParser} from "fast-xml-parser";
+import {XMLParser , XMLBuilder} from "fast-xml-parser";
 
 const xmlToJson =  new XMLParser({ignoreAttributes: false});
+const jsonToXml = new XMLBuilder({ignoreAttributes: false,
+                                format: true,
+                                cdataPropName: "#text"});
 const apiUrl = "/addresses"
 
 async function getAllAddresses() {
@@ -33,7 +36,7 @@ async function deleteAddress(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.address;
     } catch (e) {
         console.log(e);
         throw e;
@@ -84,4 +87,51 @@ async function deleteAllAddresses() {
         throw e;
     }
 }
-export {getAllAddresses , deleteAddress , deleteAllAddresses};
+async function saveAddress(address) {
+    try {
+        const addressXml = jsonToXml.build(
+            {
+                prestashop: {
+                    "@_xmlns:xlink": "http://www.w3.org/1999/xlink",
+                    address: address
+                }
+            }
+        );
+            // console.log("XML to send : \n");
+            // console.log(addressXml);
+        const result = await ApiAction(
+            apiUrl ,
+            "POST" ,
+            {},
+            addressXml
+        );
+        const json = xmlToJson.parse(result);
+        return json.prestashop.address;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
+async function getAddressesLastNameAndId(){
+    try {
+        const result = await ApiAction(
+            apiUrl ,
+            "GET" ,
+            {"display":"[id,lastname]"}
+        )
+        const json = xmlToJson.parse(result);
+        const addresses = json.prestashop.addresses.address;
+        return addresses;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+export {
+    getAllAddresses , 
+    deleteAddress , 
+    deleteAllAddresses ,
+    saveAddress , 
+    getAddressesLastNameAndId,
+};

@@ -1,12 +1,13 @@
+import { act } from "react";
 import { saveCategory , getCategoryNameAndId } from "../category/CategoryApi";
 const colonne = 'categorie';
 // -- Categories
 async function getCategories(file) {
     const categories = await createCategories(file);
-
-    await saveCategories(categories);
+    // save et set id 
+    const categoriesWithId = await saveCategories(categories);
     
-    const categoriesWithId = await setCategoryIds(categories);
+    // const categoriesWithId = await setCategoryIds(categories);
 
     return categoriesWithId;
 }
@@ -39,31 +40,24 @@ async function createCategories(file) {
 }
 
 async function saveCategories(categories) {
+    const savedCategories = [];
     for (const category of categories) {
         try {
-            await saveCategory(category);
+            // save
+            const savedCategory = await saveCategory(category);
+            // set id
+            savedCategories.push({
+                id: savedCategory.id,
+                name: category.name.language[0]["#text"],
+                link_rewrite: category.link_rewrite.language[0]["#text"],
+                active: category.active
+            });
         } catch (e) {
             console.log(`Error saving category ${category.name.language["#text"]}:`, e);
         }
     }
+    return savedCategories;
 }
 
-async function setCategoryIds(categories) {
-    const categoryMap = await getCategoryNameAndId();
-    
-    const categoriesWithId = categories.map(category => {
-        const foundCategory = categoryMap.find(c => c.name === category.name.language[0]["#text"]);
-        if (foundCategory) {
-            return { ...category, 
-                id: foundCategory.id , 
-                name: foundCategory.name , 
-                link_rewrite: category.link_rewrite.language[0]["#text"] 
-            };
-        }
-        return category;
-    });
-
-    return categoriesWithId;
-}
 
 export {getCategories}

@@ -1,13 +1,12 @@
-import { saveProductOption , getProductOptionNameAndId } from "../product/ProductOptionApi.js";
-import { saveProductOptionValue , getProductOptionValueNameAndId } from "../product/ProductOptionValueApi.js";
-import { saveCombination , getCombinationIdAndProduct } from "../combination/CombinationApi.js";
+import { saveProductOption } from "../product/ProductOptionApi.js";
+import { saveProductOptionValue } from "../product/ProductOptionValueApi.js";
+import { saveCombination } from "../combination/CombinationApi.js";
 
 
 // -- Options
 async function getOptions(file){
     const options = await createOptions(file);
-    await saveOptions(options);
-    const optionsWithId = await setOptionIds(options);
+    const optionsWithId = await saveOptions(options);
     return optionsWithId;
 }
 
@@ -54,45 +53,27 @@ async function createOptions(file){
 }
 
 async function saveOptions(options) {
+    const savedOptions = [];
     for (const option of options) {
         try {
-            await saveProductOption(option);
+            const savedOption = await saveProductOption(option);
+            savedOptions.push({
+                ...option,
+                name: option.name.language[0]["#text"],
+                pulbic_name: option.public_name.language[0]["#text"],
+                id: savedOption.id
+            });
         } catch (e) {
             throw e;
-            console.log(`Error saving option ${option.name.language["#text"]}:`, e);
         }
     }
-}
-
-async function setOptionIds(options) {
-    const optionMap = await getProductOptionNameAndId();
-    const optionsWithId = options.map(option => {
-        const foundOption = optionMap.find(p => p.name === option.name.language[0]["#text"]);
-        if (foundOption) {
-            return {
-                ...option,
-                name : option.name.language[0]["#text"],
-                pulbic_name : option.public_name.language[0]["#text"],
-                id: foundOption.id
-
-            }
-        } else {
-            console.log(`Option not found: ${option.name.language["#text"]}`);
-            return {
-                ...option,
-                name : option.name.language[0]["#text"],
-                pulbic_name : option.public_name.language[0]["#text"],
-            };
-        }
-    });
-    return optionsWithId;
+    return savedOptions;
 }
 
 // options values 
 async function getOptionValues(file, options){
     const optionValues = await createOptionValues(file, options);
-    await saveOptionValues(optionValues);
-    const optionValuesWithId = await setOptionValueIds(optionValues);
+    const optionValuesWithId = await saveOptionValues(optionValues);
     return optionValuesWithId;
 }
 async function createOptionValues(file,options){
@@ -154,46 +135,26 @@ async function createOptionValues(file,options){
 }
 
 async function saveOptionValues(optionValues) {
+    const savedOptionValues = [];
     for (const optionValue of optionValues) {
         try {
-            await saveProductOptionValue(optionValue);
+            const savedOptionValue = await saveProductOptionValue(optionValue);
+            savedOptionValues.push({
+                name: optionValue.name.language[0]["#text"],
+                id_attribute_group: optionValue.id_attribute_group,
+                id: savedOptionValue.id
+            });
         } catch (e) {
             throw e;
-            console.log(`Error saving option value ${optionValue.name.language["#text"]}:`, e);
         }
     }
-}
-
-async function setOptionValueIds(optionValues){
-    const optionValueMap = await getProductOptionValueNameAndId();
-    // console.log("Option Value Map:", optionValueMap);
-    const optionValuesWithId = optionValues.map(optionValue => {
-        // console.log("Processing option value:", optionValue);
-        const foundOptionValue = optionValueMap.find(p => p.name === optionValue.name.language[0]["#text"] 
-            && p.id_attribute_group["#text"] == optionValue.id_attribute_group
-        );
-        // console.log("Found option value:", foundOptionValue);
-        if (foundOptionValue) {
-            return {
-                name : optionValue.name.language[0]["#text"],
-                id_attribute_group : optionValue.id_attribute_group,
-                id: foundOptionValue.id
-            }
-        } else {
-            return {
-                name : optionValue.name.language[0]["#text"],
-                id_attribute_group : optionValue.id_attribute_group
-            }
-        }
-    });
-    return optionValuesWithId;
+    return savedOptionValues;
 }
 
 // Combinations 
 async function getCombinations(file , products ,options, optionValues){
     const combinations = await createCombinations(file , products ,options, optionValues);
-    await saveCombinations(combinations);
-    const combinationsWithId = await setCombinationIds(combinations);
+    const combinationsWithId = await saveCombinations(combinations);
     return combinationsWithId;
 }
 
@@ -236,9 +197,10 @@ async function createCombinations(file , products ,options, optionValues){
     return uniqueCombinations;
 }
 async function saveCombinations(combinations) {
+    const savedCombinations = [];
     for (const combination of combinations) {
         try {            
-            await saveCombination({
+            const savedCombination = await saveCombination({
                 id_product : combination.id_product,
                 minimal_quantity : 1,
                 price : combination.price,
@@ -246,25 +208,13 @@ async function saveCombinations(combinations) {
                 available_date : combination.available_date,
                 associations : combination.associations
             });
+            savedCombinations.push({ ...combination, id: savedCombination.id });
         } catch (e) {
             console.log(`Error saving combination for product ${combination.id_product}:`, e);
             throw e;
         }
     }
-}
-async function setCombinationIds(combinations){
-    const combinationMap = await getCombinationIdAndProduct();
-    // console.log("Combination Map:", combinationMap );
-    const combinationsWithId = combinations.map(combination => {
-        // console.log("Processing combination:", combination);    
-        const foundCombination = combinationMap.find(c => 
-            c.id_product["#text"] === combination.id_product 
-            && (c.associations.product_option_values.product_option_value.id === combination.id_option_value)
-        );
-        // console.log("Found combination:", foundCombination);
-        return foundCombination ? {...combination, id: foundCombination.id} : combination;
-    });
-    return combinationsWithId;
+    return savedCombinations;
 }
 
 export { 

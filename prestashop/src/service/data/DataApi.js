@@ -46,6 +46,9 @@ import {
     getOptionValues, 
 } from "./DataCombination";
 import { getStock } from "./DataStock";
+import { getCustomers } from "./DataCustomer";
+import { getAddresses } from "./DataAddress.js";
+import { getCarts } from "./DataCart.js";
 
 async function deleteAllData(setFonctionCalled) {
     const fonctionCalled = [];
@@ -136,6 +139,21 @@ async function UploadFile(file) {
     // stock
     const stock = await getStock(file2, products , optionValues , combinations);
     console.log("Stock with ID:", stock);
+
+
+// FILE 3 : orders 
+    // customers
+    const customers = await getCustomers(file3);
+    console.log("Customers with ID:", customers);
+    // addresses
+    const addresses = await getAddresses(file3);
+    console.log("Addresses with ID:", addresses);
+    // cart 
+    const cart = await getCarts(
+                                file3,products,optionValues
+                                ,combinations,customers
+                            );
+    console.log("carts with ID:",cart);
 
 }
 

@@ -33,7 +33,7 @@ async function deleteTaxRuleGroup(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.tax_rule_group;
     } catch (e) {
         console.log(e);
         throw e;
@@ -97,7 +97,7 @@ async function saveTaxRuleGroup(taxRuleGroup) {
             taxRuleGroupXml,
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.tax_rule_group;
     } catch (e) {
         console.log(e);
         throw e;

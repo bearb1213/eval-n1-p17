@@ -1,7 +1,10 @@
 import {ApiAction} from "../util/ApiAction.js";
-import {XMLParser} from "fast-xml-parser";
+import {XMLParser , XMLBuilder} from "fast-xml-parser";
 
 const xmlToJson =  new XMLParser({ignoreAttributes: false});
+const jsonToXml = new XMLBuilder({ignoreAttributes: false,
+                                format: true,
+                                cdataPropName: "#text"});
 const apiUrl = "/customers"
 
 async function getAllCustomers() {
@@ -33,7 +36,7 @@ async function deleteCustomer(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.customer;
     } catch (e) {
         console.log(e);
         throw e;
@@ -84,4 +87,51 @@ async function deleteAllCustomers() {
         throw e;
     }
 }
-export {getAllCustomers , deleteCustomer , deleteAllCustomers};
+async function saveCustomer(customer) {
+    try {
+        const customerXml = jsonToXml.build(
+            {
+                prestashop: {
+                    "@_xmlns:xlink": "http://www.w3.org/1999/xlink",
+                    customer: customer
+                }
+            }
+        );
+        // console.log("XML to send : \n");
+        // console.log(customerXml);
+        const result = await ApiAction(
+            apiUrl ,
+            "POST" ,
+            {} ,
+            customerXml
+        );
+        const json = xmlToJson.parse(result);
+        return json.prestashop.customer;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
+async function getProductEmailAndId(){
+    try {
+        const result = await ApiAction(
+            apiUrl ,
+            "GET" ,
+            {"display":"[id,email]"}
+        )
+        const json = xmlToJson.parse(result);
+        const customers = json.prestashop.customers.customer;
+        return customers;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+export {
+    getAllCustomers , 
+    deleteCustomer , 
+    deleteAllCustomers , 
+    saveCustomer ,
+    getProductEmailAndId
+};

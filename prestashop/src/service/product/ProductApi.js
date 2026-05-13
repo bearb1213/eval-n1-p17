@@ -33,7 +33,7 @@ async function deleteProduct(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.product;
     } catch (e) {
         console.log(e);
         throw e;
@@ -97,7 +97,7 @@ async function saveProduct(product) {
             productXml,
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.product;
     } catch (e) {
         console.log(e);
         throw e;

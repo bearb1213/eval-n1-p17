@@ -18,7 +18,7 @@ async function getAllStockAvailable() {
         );
         const json = xmlToJson.parse(result);
         const stockAvailable = (json.prestashop.stock_availables.stock_available);
-        console.log(stockAvailable);
+        // console.log(stockAvailable);
         return stockAvailable;
     } catch (e) {
         console.log(e)
@@ -55,7 +55,7 @@ async function updateStockAvailable(id, stockAvailable) {
                 stock_available: stockAvailable,
             }
         });
-        console.log("Stock Available XML:", stockAvailableXml);
+        // console.log("Stock Available XML:", stockAvailableXml);
         const result = await ApiAction(
             apiUrl+"/"+id ,
             "PUT" ,
@@ -63,7 +63,7 @@ async function updateStockAvailable(id, stockAvailable) {
             stockAvailableXml
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop;
+        return json.prestashop.stock_available;
     } catch (error) {
         console.log(error);
         throw error;

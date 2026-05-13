@@ -7,9 +7,8 @@ import {
 
 async function getStock(file, products , option_values , combinations){
     const stock = await getAllStock(file, products , option_values , combinations);
-    console.log("Stock to update:", stock);
-    await saveStock(stock);
-    return stock;
+    const stockWithId = await saveStock(stock);
+    return stockWithId;
 }
 
 async function getAllStock(file, products , option_values , combinations){
@@ -53,7 +52,7 @@ async function getAllStock(file, products , option_values , combinations){
             stock.quantity = quantity;
             stock.out_of_stock = 1;
             // await updateStockAvailable(stock.id, stock);
-        }
+        } 
         return stock;
     });
     const retour = [];
@@ -70,14 +69,17 @@ async function getAllStock(file, products , option_values , combinations){
 }
 
 async function saveStock(stockAvailable) {
+    const savedStock = [];
     for (const stock of stockAvailable) {
         try {
-            await updateStockAvailable(stock.id, stock);
+            const updatedStock = await updateStockAvailable(stock.id, stock);
+            savedStock.push({ ...stock, id: updatedStock.id });
         } catch (error) {
             console.log(error);
             throw error;
         }
     }
+    return savedStock;
 }
 
 export {
