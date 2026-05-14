@@ -9,11 +9,11 @@ const module = "ps_cashondelivery";
 
 async function getOrders(file , products , carts , customers , addresses , combinations) {
     const orderStates = await getOrderStates();
-    console.log("orderStates" , orderStates);
+    // console.log("orderStates" , orderStates);
     const orders = await createOrder(file , products , carts , customers , addresses , combinations , orderStates);
-    console.log("orders" , orders);
+    // console.log("orders" , orders);
     const savedOrders = await saveOrders(orders);
-    console.log("savedOrders" , savedOrders);
+    // console.log("savedOrders" , savedOrders);
     return savedOrders;
 }
 
@@ -28,15 +28,15 @@ async function createOrder(file , products , carts , customers , addresses , com
         if(!customerFound) continue ;
 
         const cartFound = carts.find(c => c.name === item["achat"] && c.id_customer === customerFound.id);
-        console.log("cartFound" , cartFound);
+        // console.log("cartFound" , cartFound);
         if(!cartFound) continue ;
     
         const orderStateFound = orderStates.find(os => os.name === item["etat"].toLowerCase());
-        console.log("orderStateFound" , orderStateFound);
+        // console.log("orderStateFound" , orderStateFound);
         if(!orderStateFound) continue ;
 
         const addressFound = addresses.find(a => a.address1 === item["adresse"]);
-        console.log("addressFound" , addressFound);
+        // console.log("addressFound" , addressFound);
         if(!addressFound) continue ;
 
         const {order_row , prix_ht , prix_ttc} = await createOrderRow(cartFound , products , combinations);
@@ -101,9 +101,9 @@ async function getOrderStates(){
 }
 async function createOrderRow(cart , products , combinations){
     const orderRow = [];
-    let prixTotalHT = 0;
-    let prixTotalTTC = 0;
-    console.log("Creating order row for cart:", cart);
+    let prixTotalHT = 0.;
+    let prixTotalTTC = 0.;
+    // console.log("Creating order row for cart:", cart);
     for(const item of cart.associations.cart_rows.cart_row){
         const productFound = products.find(p => p.id === item.id_product);
         let price = 0;
@@ -113,16 +113,16 @@ async function createOrderRow(cart , products , combinations){
         } else {
             price = productFound.price;
         }
-        prixTotalHT += parseFloat(price * item.quantity).toFixed(5);
-        prixTotalTTC += parseFloat(price * item.quantity * (1 + (productFound.tax.rate / 100))).toFixed(5);
+        prixTotalHT += parseFloat((price * item.quantity));
+        prixTotalTTC += parseFloat((price * item.quantity * (1 + (productFound.tax.rate / 100))));
         orderRow.push({
             product_id : item.id_product,
             product_quantity : item.quantity,
             product_name : productFound ? productFound.name : "Unknown Product",
             product_attribute_id : item.id_product_attribute,
-            product_price : parseFloat(price * item.quantity).toFixed(5),
-            unit_price_tax_excl : parseFloat(price).toFixed(5),
-            unit_price_tax_incl : parseFloat(price * (1 + (productFound.tax.rate / 100))).toFixed(5),
+            product_price : parseFloat((price * item.quantity).toFixed(5)),
+            unit_price_tax_excl : parseFloat((price)).toFixed(5),
+            unit_price_tax_incl : parseFloat((price * (1 + (productFound.tax.rate / 100))).toFixed(5)).toFixed(5),
             product_reference : productFound.reference,
             id_customization: 0
         });

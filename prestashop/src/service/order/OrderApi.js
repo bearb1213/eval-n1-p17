@@ -87,8 +87,8 @@ async function saveOrder(order) {
                 order: order
             }
         });
-        console.log("Order XML:");
-        console.log(orderXml);
+        // console.log("Order XML:");
+        // console.log(orderXml);
         const result = await ApiAction(
             apiUrl ,
             "POST" ,
@@ -110,8 +110,8 @@ async function updateOrder(order) {
                 order: order
             }
         });
-        console.log("Order XML:");
-        console.log(orderXml);
+        // console.log("Order XML:");
+        // console.log(orderXml);
         const result = await ApiAction(
             apiUrl ,
             "PUT" ,
@@ -133,8 +133,8 @@ async function patchOrder(order) {
                 order: order
             }
         });
-        console.log("Order XML:");
-        console.log(orderXml);
+        // console.log("Order XML:");
+        // console.log(orderXml);
         const result = await ApiAction(
             apiUrl ,
             "PATCH" ,

@@ -48,7 +48,7 @@ async function getAllIdOrderHistories() {
         );
         const json = xmlToJson.parse(result);
         const orderHistories = json.prestashop.order_histories;
-        console.log(orderHistories);
+        // console.log(orderHistories);
 
         return orderHistories;
     } catch (e) {
@@ -67,7 +67,7 @@ async function deleteAllOrderHistories() {
             : [];
         console.log("IDs to delete:", ids);
         for (const id of ids) {
-            try {
+            try {   
                 const rep = await deleteOrderHistory(id);
                 console.log(`Deleted order history with id ${id}:`, rep);
             } catch (e) {
@@ -87,8 +87,8 @@ async function saveOrderHistory(orderHistory) {
                 order_history: orderHistory
             }
         });
-        console.log("Order History XML:");
-        console.log(orderHistoryXml);
+        // console.log("Order History XML:");
+        // console.log(orderHistoryXml);
         const result = await ApiAction(
             apiUrl ,
             "POST" ,
