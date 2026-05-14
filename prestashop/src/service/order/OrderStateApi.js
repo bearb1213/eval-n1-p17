@@ -11,7 +11,7 @@ async function getAllOrderStates() {
             "GET" ,
             {"display":"full"})
         const json = xmlToJson.parse(result);
-        const orderStates = json.prestashop.order_states;
+        const orderStates = json.prestashop.order_states.order_state;
         console.log(orderStates);
 
         return orderStates;
@@ -29,7 +29,7 @@ async function getAllIdOrderStates() {
             {"display":"[id]"}
         );
         const json = xmlToJson.parse(result);
-        const orderStates = json.prestashop.order_states;
+        const orderStates = json.prestashop.order_states.order_state;
         console.log(orderStates);
 
         return orderStates;

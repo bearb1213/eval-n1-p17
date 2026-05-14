@@ -30,7 +30,7 @@ async function createProducts(file1, categories , taxes) {
             reference: item['reference'],
             available_date : date,
             wholesale_price : parseFloat(item['prix_achat'].replace(',', '.')),
-            price : price.toFixed(2), 
+            price : price.toFixed(5), 
             id_tax_rules_group : tax.id_tax_rules_group ,
             state: 1,   
             on_sale: 1,
@@ -70,7 +70,7 @@ async function saveProducts(products) {
                 id_category_default: product.id_category_default,
                 associations: product.associations
             });
-            savedProducts.push({ ...product, id: savedProduct.id });
+            savedProducts.push({ ...product, id: savedProduct.id , name: product.name.language["#text"] });
         } catch (e) {
             console.log(`Error saving product ${product.name.language["#text"]}:`, e);
         }

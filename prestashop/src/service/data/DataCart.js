@@ -1,4 +1,4 @@
-import {saveCart} from "../cart/CartApi"
+import {saveCart , patchCart} from "../cart/CartApi"
 
 const currencyId = 1;
 const langId = 1; 
@@ -59,6 +59,7 @@ async function cartComposition(file , products, optionValues ,combinations , cus
             if(customerFound){
 
                 carts.push({
+                    name: name , 
                     id_customer : customerFound.id,
                     date_add : dateFormated,
                     id_currency : currencyId,
@@ -80,7 +81,19 @@ async function saveCarts(carts){
     const savedCarts = [];
     for(const cart of carts) {
         try {
-            const savedCart = await saveCart(cart);
+            const savedCart = await saveCart(
+                {
+                    id_customer: cart.id_customer,
+                    date_add: cart.date_add,
+                    id_currency: cart.id_currency,
+                    id_lang: cart.id_lang,
+                    associations: cart.associations
+                }
+            );
+            await patchCart({
+                id: savedCart.id,
+                date_add: cart.date_add
+            });
             savedCarts.push({ ...cart, id: savedCart.id });
         } catch (error) {
             console.log(error);

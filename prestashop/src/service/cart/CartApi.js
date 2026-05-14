@@ -120,6 +120,31 @@ async function getCartDisplayFull(){
         throw e;
     }
 }
+async function patchCart(cart){
+    try {
+        const cartXml = jsonToXml.build(
+            {
+                prestashop: {
+                    "@_xmlns:xlink": "http://www.w3.org/1999/xlink",
+                    cart: cart
+                }
+            }
+        );
+        // console.log("XML to send : \n");
+        // console.log(cartXml);
+        const result = await ApiAction(
+            apiUrl ,
+            "PATCH" ,
+            {},
+            cartXml
+        );
+        const json = xmlToJson.parse(result);
+        return json.prestashop.cart;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
 
 export {
     getAllCarts , 
@@ -128,4 +153,5 @@ export {
     deleteAllCarts,
     saveCart,
     getCartDisplayFull,
+    patchCart,
 };

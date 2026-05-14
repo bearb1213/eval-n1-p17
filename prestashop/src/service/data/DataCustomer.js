@@ -32,7 +32,7 @@ async function saveCustomers(customers) {
     for (const customer of customers) {
         try {
             const savedCustomer = await saveCustomer(customer);
-            savedCustomers.push({ ...customer, id: savedCustomer.id });
+            savedCustomers.push({ ...customer, id: savedCustomer.id , secure_key: savedCustomer.secure_key });
         } catch (error) {
             console.error(`Error saving customer with email ${customer.email}:`, error);
             throw error;

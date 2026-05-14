@@ -1,7 +1,10 @@
 import {ApiAction} from "../util/ApiAction.js";
-import {XMLParser} from "fast-xml-parser";
+import {XMLParser , XMLBuilder} from "fast-xml-parser";
 
 const xmlToJson =  new XMLParser({ignoreAttributes: false});
+const jsonToXml = new XMLBuilder({ignoreAttributes: false,
+                                format: true,
+                                cdataPropName: "#text"});
 const apiUrl = "/order_histories"
 
 async function getAllOrderHistories() {
@@ -76,5 +79,35 @@ async function deleteAllOrderHistories() {
         throw e;
     }
 }
+async function saveOrderHistory(orderHistory) {
+    try {
+        const orderHistoryXml = await jsonToXml.build({
+            prestashop: {
+                "@_xmlns:xlink": "http://www.w3.org/1999/xlink",
+                order_history: orderHistory
+            }
+        });
+        console.log("Order History XML:");
+        console.log(orderHistoryXml);
+        const result = await ApiAction(
+            apiUrl ,
+            "POST" ,
+            {},
+            orderHistoryXml,
+        );
+        const json = xmlToJson.parse(result);
+        return json.prestashop.order_history;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
 
-export {getAllOrderHistories , deleteOrderHistory, getAllIdOrderHistories, deleteAllOrderHistories};
+export {
+    getAllOrderHistories , 
+    deleteOrderHistory, 
+    getAllIdOrderHistories, 
+    deleteAllOrderHistories ,
+    saveOrderHistory , 
+
+};

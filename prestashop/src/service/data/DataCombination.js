@@ -170,7 +170,7 @@ async function createCombinations(file , products ,options, optionValues){
                 id_option : optionFound.id,
                 id_option_value : optionValueFound.id,
                 minimal_quantity : 1,
-                price : price.toFixed(2),
+                price : price.toFixed(5),
                 wholesale_price : productFound.wholesale_price , 
                 available_date : productFound.available_date,
                 associations : {
