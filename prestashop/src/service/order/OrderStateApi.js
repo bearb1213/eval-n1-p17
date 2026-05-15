@@ -12,7 +12,7 @@ async function getAllOrderStates() {
             {"display":"full"})
         const json = xmlToJson.parse(result);
         const orderStates = json.prestashop.order_states.order_state;
-        console.log(orderStates);
+        // console.log(orderStates);
 
         return orderStates;
     } catch (e) {

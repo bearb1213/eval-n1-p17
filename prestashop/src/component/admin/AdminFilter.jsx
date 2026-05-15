@@ -43,13 +43,9 @@ export default function AdminFilter() {
             ]
         },
         {
-            name: "Products",
-            // path: "/admin/products",
-            isOpenable: true,
-            children: [
-                { name: "Add Product", path: "/admin/products/add" },
-                { name: "Edit Product", path: "/admin/products/edit" }
-            ]
+            name: "Orders",
+            path: "/admin/orders",
+            isOpenable: false,
         },
     ];
 

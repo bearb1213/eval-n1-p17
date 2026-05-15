@@ -14,10 +14,10 @@ async function getAllCarts() {
             "GET" ,
             {"display":"full"})
         const json = xmlToJson.parse(result);
-        const carts = json.prestashop.carts;
-        console.log(carts);
+        const carts = json.prestashop.carts.cart;
+        // console.log(carts);
 
-        return carts;
+        return Array.isArray(carts) ? carts : carts ? [carts] : [];
     } catch (e) {
         console.log(e)
         throw e;

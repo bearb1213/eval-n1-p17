@@ -15,10 +15,10 @@ async function getAllCustomers() {
         {"display":"full"}
         );
         const json = xmlToJson.parse(result);
-        const customers = json.prestashop.customers;
+        const customers = json.prestashop.customers.customer;
         console.log(customers);
 
-        return customers;
+        return Array.isArray(customers) ? customers : customers ? [customers] : [];
     } catch (e) {
         console.log(e)
         throw e;

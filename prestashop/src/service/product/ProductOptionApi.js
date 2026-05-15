@@ -15,10 +15,10 @@ export default async function getAllProductOptions() {
         {"display":"full"}
         );
         const json = xmlToJson.parse(result);
-        const productOptions = json.prestashop.product_options;
-        console.log(productOptions);
+        const productOptions = json.prestashop.product_options.product_option;
+        // console.log(productOptions);
 
-        return productOptions;
+        return Array.isArray(productOptions) ? productOptions : [productOptions];
     } catch (e) {
         console.log(e)
         throw e;
@@ -33,7 +33,7 @@ async function deleteProductOption(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop.product_option;
+        return json.prestashop;
     } catch (e) {
         console.log(e);
         throw e;
@@ -130,4 +130,5 @@ export {
     deleteAllProductOptions,
     saveProductOption , 
     getProductOptionNameAndId ,
+    getAllProductOptions,
 };

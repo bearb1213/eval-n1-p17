@@ -15,10 +15,10 @@ export default async function getAllProductOptionValues() {
         {"display":"full"}
         );
         const json = xmlToJson.parse(result);
-        const productOptionValues = json.prestashop.product_option_values;
-        console.log(productOptionValues);
+        const productOptionValues = json.prestashop.product_option_values.product_option_value;
+        // console.log(productOptionValues);
 
-        return productOptionValues;
+        return Array.isArray(productOptionValues) ? productOptionValues : [productOptionValues];
     } catch (e) {
         console.log(e)
         throw e;
@@ -33,7 +33,7 @@ async function deleteProductOptionValue(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop.product_option_value;
+        return json.prestashop;
     } catch (e) {
         console.log(e);
         throw e;
@@ -130,4 +130,5 @@ export {
     deleteAllProductOptionValues ,
     saveProductOptionValue ,
     getProductOptionValueNameAndId ,
+    getAllProductOptionValues ,
 };

@@ -55,43 +55,43 @@ async function deleteAllData(setFonctionCalled) {
     const fonctionCalled = [];
     try {
         const fonctions = [
-            {name : "Delete All Order Slips", func : deleteAllOrderSlips} , 
+            // {name : "Delete All Order Slips", func : deleteAllOrderSlips} , 
             {name : "Delete All Order Histories", func : deleteAllOrderHistories},
             {name : "Delete All Order Payments", func : deleteAllOrderPayments},
-            {name : "Delete All Order Cart Rules", func : deleteAllOrderCartRules},
-            {name : "Delete All Order Carriers", func : deleteAllOrderCarriers},
+            // {name : "Delete All Order Cart Rules", func : deleteAllOrderCartRules},
+            // {name : "Delete All Order Carriers", func : deleteAllOrderCarriers},
             {name : "Delete All Order Details", func : deleteAllOrderDetails},
             {name : "Delete All Order Invoices", func : deleteAllOrderInvoices},
-            {name : "Delete All Customer Threads", func : deleteAllCustomerThreads},
-            {name : "Delete All Customer Messages", func : deleteAllCustomerMessages},
-            {name : "Delete All Messages", func : deleteAllMessages},
+            // {name : "Delete All Customer Threads", func : deleteAllCustomerThreads},
+            // {name : "Delete All Customer Messages", func : deleteAllCustomerMessages},
+            // {name : "Delete All Messages", func : deleteAllMessages},
             {name : "Delete All Specific Prices", func : deleteAllSpecificPrices},
-            {name : "Delete All Customizations", func : deleteAllCustomizations},
+            // {name : "Delete All Customizations", func : deleteAllCustomizations},
             {name : "Delete All Orders", func : deleteAllOrders},
             {name : "Delete All Carts", func : deleteAllCarts},
-            {name : "Delete All Cart Rules", func : deleteAllCartRules},
+            // {name : "Delete All Cart Rules", func : deleteAllCartRules},
             {name : "Delete All Guests", func : deleteAllGuests},
             {name : "Delete All Customers", func : deleteAllCustomers},
-            {name : "Delete All Product Suppliers", func : deleteAllProductSuppliers},
+            // {name : "Delete All Product Suppliers", func : deleteAllProductSuppliers},
+            // {name : "Delete All Tags", func : deleteAllTags},
+            // {name : "Delete All Product Feature Values", func : deleteAllProductFeatureValues},
+            // {name : "Delete All Product Features", func : deleteAllProductFeatures},
             {name : "Delete All Combinations", func : deleteAllCombinations},
-            {name : "Delete All Products", func : deleteAllProducts},
-            {name : "Delete All Tags", func : deleteAllTags},
-            {name : "Delete All Product Feature Values", func : deleteAllProductFeatureValues},
-            {name : "Delete All Product Features", func : deleteAllProductFeatures},
             {name : "Delete All Product Option Values", func : deleteAllProductOptionValues},
             {name : "Delete All Product Options", func : deleteAllProductOptions},
-            {name : "Delete All Manufacturers", func : deleteAllManufacturers},
-            {name : "Delete All Suppliers", func : deleteAllSuppliers},
-            {name : "Delete All Attachments", func : deleteAllAttachments},
+            {name : "Delete All Products", func : deleteAllProducts},
+            // {name : "Delete All Manufacturers", func : deleteAllManufacturers},
+            // {name : "Delete All Suppliers", func : deleteAllSuppliers},
+            // {name : "Delete All Attachments", func : deleteAllAttachments},
             {name : "Delete All Categories", func : deleteAllCategories},
-            {name : "Delete All Carriers", func : deleteAllCarriers},
+            // {name : "Delete All Carriers", func : deleteAllCarriers},
             {name : "Delete All Tax Rule Groups", func : deleteAllTaxRuleGroups},
             {name : "Delete All Tax Rules", func : deleteAllTaxRules},
             {name : "Delete All Taxes", func : deleteAllTaxes},
-            {name : "Delete All Price Ranges", func : deleteAllPriceRanges},
-            {name : "Delete All Weight Ranges", func : deleteAllWeightRanges},
-            {name : "Delete All Deliveries", func : deleteAllDeliveries},
-            {name : "Delete All Carriers", func : deleteAllCarriers},
+            // {name : "Delete All Price Ranges", func : deleteAllPriceRanges},
+            // {name : "Delete All Weight Ranges", func : deleteAllWeightRanges},
+            // {name : "Delete All Deliveries", func : deleteAllDeliveries},
+            // {name : "Delete All Carriers", func : deleteAllCarriers},
             {name : "Delete All Addresses", func : deleteAllAddresses}
         ]
         for (const f of fonctions) {
@@ -135,7 +135,7 @@ async function UploadFile(file) {
     const optionValues = await getOptionValues(file2, options);
     console.log("Option Values with ID:", optionValues);
     // combinations
-    const combinations = await getCombinations(file2 , products ,options, optionValues);
+    const combinations = await getCombinations(file2 , products ,options, optionValues );
     console.log("Combinations with ID:", combinations);
     // stock
     const stock = await getStock(file2, products , optionValues , combinations);

@@ -14,10 +14,10 @@ async function getAllOrders() {
             "GET" ,
             {"display":"full"})
         const json = xmlToJson.parse(result);
-        const orders = json.prestashop.orders;
+        const orders = json.prestashop.orders.order;
         console.log(orders);
 
-        return orders;
+        return Array.isArray(orders) ? orders : orders ? [orders] : [];
     } catch (e) {
         console.log(e)
         throw e;

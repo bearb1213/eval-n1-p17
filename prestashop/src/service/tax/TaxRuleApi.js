@@ -15,10 +15,10 @@ async function getAllTaxRules() {
         {"display":"full"}
         );
         const json = xmlToJson.parse(result);
-        const taxRules = json.prestashop.tax_rules;
-        console.log(taxRules);
+        const taxRules = json.prestashop.tax_rules.tax_rule;
+        // console.log(taxRules);
 
-        return taxRules;
+        return Array.isArray(taxRules) ? taxRules : [taxRules];
     } catch (e) {
         console.log(e)
         throw e;
@@ -33,7 +33,7 @@ async function deleteTaxRule(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop.tax_rule;
+        return json.prestashop;
     } catch (e) {
         console.log(e);
         throw e;
@@ -61,11 +61,11 @@ async function getAllIdTaxRules() {
 async function deleteAllTaxRules() {
     try {
         const taxRules = await getAllIdTaxRules();
-        const ids = Array.isArray(taxRules.tax_rule)
+        const ids = taxRules ? (Array.isArray(taxRules.tax_rule)
             ? taxRules.tax_rule.map(tr => tr.id)
             : taxRules.tax_rule && Object.keys(taxRules.tax_rule).length > 0
             ? [taxRules.tax_rule.id]
-            : [];
+            : []) : [];
         console.log("IDs to delete:", ids);
         for (const id of ids) {
             try {

@@ -16,10 +16,10 @@ async function getAllCategories() {
             "GET" ,
             {"display":"full"})
         const json = xmlToJson.parse(result);
-        const categories = json.prestashop.categories;
-        console.log(categories);
+        const categories = json.prestashop.categories.category;
+        // console.log(categories);
 
-        return categories;
+        return Array.isArray(categories) ? categories : [categories];
     } catch (e) {
         console.log(e)
         throw e;

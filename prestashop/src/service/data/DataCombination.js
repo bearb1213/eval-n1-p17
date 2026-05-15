@@ -152,7 +152,7 @@ async function saveOptionValues(optionValues) {
 }
 
 // Combinations 
-async function getCombinations(file , products ,options, optionValues){
+async function getCombinations(file , products ,options, optionValues ){
     const combinations = await createCombinations(file , products ,options, optionValues);
     const combinationsWithId = await saveCombinations(combinations);
     return combinationsWithId;
@@ -170,14 +170,14 @@ async function createCombinations(file , products ,options, optionValues){
                 id_option : optionFound.id,
                 id_option_value : optionValueFound.id,
                 minimal_quantity : 1,
-                price : price.toFixed(5),
+                price : parseFloat(parseFloat(price) - parseFloat(productFound.price))  ,
                 wholesale_price : productFound.wholesale_price , 
                 available_date : productFound.available_date,
                 associations : {
                     product_option_values : {
                         product_option_value : [
                             {
-                                id : optionValueFound.id
+                                id : optionValueFound.id    
                             }
                         ]
                     }
@@ -203,7 +203,7 @@ async function saveCombinations(combinations) {
             const savedCombination = await saveCombination({
                 id_product : combination.id_product,
                 minimal_quantity : 1,
-                price : combination.price,
+                price : (combination.price).toFixed(5) ,
                 wholesale_price : combination.wholesale_price ,
                 available_date : combination.available_date,
                 associations : combination.associations

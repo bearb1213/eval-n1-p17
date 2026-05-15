@@ -68,7 +68,8 @@ async function saveProducts(products) {
                 active: product.active,
                 out_of_stock: product.out_of_stock,
                 id_category_default: product.id_category_default,
-                associations: product.associations
+                associations: product.associations,
+                show_price: 1 ,
             });
             savedProducts.push({ ...product, id: savedProduct.id , name: product.name.language["#text"] });
         } catch (e) {

@@ -15,10 +15,10 @@ async function getAllCombinations() {
         {"display":"full"}
         );
         const json = xmlToJson.parse(result);
-        const combinations = json.prestashop.combinations;
-        console.log(combinations);
+        const combinations = json.prestashop.combinations.combination;
+        // console.log(combinations);
 
-        return combinations;
+        return Array.isArray(combinations) ? combinations : [combinations];
     } catch (e) {
         console.log(e)
         throw e;

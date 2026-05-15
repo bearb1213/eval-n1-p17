@@ -64,9 +64,9 @@ async function getAllIdAddresses() {
 async function deleteAllAddresses() {
     try {
         const addresses = await getAllIdAddresses();
-        const ids = Array.isArray(addresses.address)
+        const ids = addresses && Array.isArray(addresses.address)
             ? addresses.address.map(a => a.id)
-            : addresses.address && Object.keys(addresses.address).length > 0
+            : addresses && addresses.address && Object.keys(addresses.address).length > 0
             ? [addresses.address.id]
             : [];
         console.log("IDs to delete:", ids);

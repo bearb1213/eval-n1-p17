@@ -20,23 +20,23 @@ async function getOrders(file , products , carts , customers , addresses , combi
 async function createOrder(file , products , carts , customers , addresses , combinations , orderStates) {
     const retour = [];
     for(const item of file) {
-        // console.log("item" , item);
+        console.log("item" , item);
 
         if(!item["etat"]) continue ;
         const customerFound = customers.find(c => c.email === item["email"]);
-        // console.log("customerFound" , customerFound);
+        console.log("customerFound" , customerFound);
         if(!customerFound) continue ;
 
         const cartFound = carts.find(c => c.name === item["achat"] && c.id_customer === customerFound.id);
-        // console.log("cartFound" , cartFound);
+        console.log("cartFound" , cartFound);
         if(!cartFound) continue ;
     
         const orderStateFound = orderStates.find(os => os.name === item["etat"].toLowerCase());
-        // console.log("orderStateFound" , orderStateFound);
+        console.log("orderStateFound" , orderStateFound);
         if(!orderStateFound) continue ;
 
         const addressFound = addresses.find(a => a.address1 === item["adresse"]);
-        // console.log("addressFound" , addressFound);
+        console.log("addressFound" , addressFound);
         if(!addressFound) continue ;
 
         const {order_row , prix_ht , prix_ttc} = await createOrderRow(cartFound , products , combinations);
@@ -105,14 +105,16 @@ async function createOrderRow(cart , products , combinations){
     let prixTotalTTC = 0.;
     // console.log("Creating order row for cart:", cart);
     for(const item of cart.associations.cart_rows.cart_row){
+        // console.log("Processing cart item:", item);
         const productFound = products.find(p => p.id === item.id_product);
         let price = 0;
         if(item.id_product_attribute!== "0" || item.id_product_attribute !== 0){
             const combinationFound = combinations.find(c => c.id === item.id_product_attribute);
-            price = combinationFound ? combinationFound.price : productFound.price;
+            price = combinationFound ? parseFloat(combinationFound.price)+ parseFloat(productFound.price) : parseFloat(productFound.price);
         } else {
-            price = productFound.price;
-        }
+            price = parseFloat(productFound.price);
+        } 
+        // console.log("Price for item:", price);
         prixTotalHT += parseFloat((price * item.quantity));
         prixTotalTTC += parseFloat((price * item.quantity * (1 + (productFound.tax.rate / 100))));
         orderRow.push({
@@ -120,7 +122,7 @@ async function createOrderRow(cart , products , combinations){
             product_quantity : item.quantity,
             product_name : productFound ? productFound.name : "Unknown Product",
             product_attribute_id : item.id_product_attribute,
-            product_price : parseFloat((price * item.quantity).toFixed(5)),
+            product_price : parseFloat((price * item.quantity).toFixed(5)).toFixed(5),
             unit_price_tax_excl : parseFloat((price)).toFixed(5),
             unit_price_tax_incl : parseFloat((price * (1 + (productFound.tax.rate / 100))).toFixed(5)).toFixed(5),
             product_reference : productFound.reference,
@@ -148,7 +150,8 @@ async function saveOrders(orders) {
                 date_add: order.date_add,
                 date_upd : order.date_add,
                 invoice_date: order.invoice_date,
-
+                id_address_delivery : order.id_address_delivery,
+                id_address_invoice : order.id_address_invoice,
             });
         } catch (e) {
             console.log(e);

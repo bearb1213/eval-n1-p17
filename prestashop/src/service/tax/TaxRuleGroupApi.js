@@ -1,4 +1,4 @@
-import {ApiAction} from "../util/ApiAction.js";
+    import {ApiAction} from "../util/ApiAction.js";
 import {XMLParser ,XMLBuilder} from "fast-xml-parser";
 
 const xmlToJson =  new XMLParser({ignoreAttributes: false});
@@ -15,10 +15,10 @@ async function getAllTaxRuleGroups() {
         {"display":"full"}
         );
         const json = xmlToJson.parse(result);
-        const taxRuleGroups = json.prestashop.tax_rule_groups;
-        console.log(taxRuleGroups);
+        const taxRuleGroups = json.prestashop.tax_rule_groups.tax_rule_group;
+        // console.log(taxRuleGroups);
 
-        return taxRuleGroups;
+        return Array.isArray(taxRuleGroups) ? taxRuleGroups : [taxRuleGroups];
     } catch (e) {
         console.log(e)
         throw e;
@@ -33,7 +33,7 @@ async function deleteTaxRuleGroup(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop.tax_rule_group;
+        return json.prestashop;
     } catch (e) {
         console.log(e);
         throw e;
