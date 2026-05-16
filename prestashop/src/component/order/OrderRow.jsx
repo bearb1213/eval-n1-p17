@@ -8,6 +8,7 @@ export default function OrderRow({
   onToggle,
   stateOptions,
   onChangeState,
+  isAdmin = false,
 }) {
   const [isEditingState, setIsEditingState] = useState(false);
   const clientName = order.customer
@@ -43,16 +44,18 @@ export default function OrderRow({
             {!isEditingState && (
               <div className="flex items-center gap-2">
                 <OrderStateBadge stateName={stateName} />
-                <button
-                  type="button"
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setIsEditingState(true);
-                  }}
-                >
-                  Changer
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setIsEditingState(true);
+                    }}
+                  >
+                    Changer
+                  </button>
+                )}
               </div>
             )}
             {isEditingState && (

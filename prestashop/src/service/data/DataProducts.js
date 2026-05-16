@@ -37,6 +37,7 @@ async function createProducts(file1, categories , taxes) {
             active : 1,
             out_of_stock: 1,  
             id_category_default : category.id,
+            available_for_order : 1,
             associations : {
                 categories : {
                     category : [

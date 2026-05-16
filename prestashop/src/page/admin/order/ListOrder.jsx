@@ -64,6 +64,7 @@ export default function ListOrder() {
         onToggle={toggleExpand}
         stateOptions={stateOptions}
         onChangeState={handleChangeState}
+        isAdmin={true}
       />
       {orders.length === 0 && <EmptyState />}
     </div>

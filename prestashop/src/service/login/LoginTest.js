@@ -81,7 +81,7 @@ async function loginAdmin(email,password){
                 value.nom = emp.lastname;
                 value.prenom = emp.firstname;
 
-                sessionStorage.setItem("admin", JSON.stringify(value));
+                localStorage.setItem("admin", JSON.stringify(value));
 
                 break;
             } 
@@ -99,7 +99,7 @@ async function loginAdmin(email,password){
 
 async function testLogin(){
     try {
-        const admin = (sessionStorage.getItem("admin"));
+        const admin = (localStorage.getItem("admin"));
         if(admin){
             const adminObj = JSON.parse(admin);
             if(adminObj.isValide && adminObj.isActif){
@@ -116,7 +116,7 @@ async function testLogin(){
 }
 
 async function logoutAdmin(){
-    sessionStorage.removeItem("admin");
+    localStorage.removeItem("admin");
 }
 
 export {loginAdmin , testLogin, logoutAdmin};

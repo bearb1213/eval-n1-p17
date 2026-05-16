@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getProducts } from "../../service/product/ProductService";
+import { handleCart } from "../../service/cart/CartService";
 
 export default function ProductDetail() {
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [selectedComboId, setSelectedComboId] = useState("");
+  const [number , setNumber] = useState(1);
+  const [loadingAdd , setLoadingAdd] = useState(false);
   useEffect(() => {
     async function fetchProduct() {
       try {
@@ -25,6 +28,8 @@ export default function ProductDetail() {
           (item) => String(item.id) === String(productId)
         );
         setProduct(found || null);
+        const firstComboId = found?.combinations?.[0]?.id;
+        setSelectedComboId(firstComboId ? String(firstComboId) : "");
       } catch (error) {
         console.error("Error fetching product:", error);
         setProduct(null);
@@ -40,6 +45,77 @@ export default function ProductDetail() {
       style: "currency",
       currency: "EUR",
     }).format(price);
+  };
+
+  
+
+  const selectedCombo = product?.combinations?.find(
+    (combo) => String(combo.id) === String(selectedComboId)
+  );
+  const basePrice = (product?.price) * (1+ (product?.tax?.rate || 0) / 100) || 0;
+  const comboPrice = selectedCombo ? selectedCombo.price : 0;
+  const displayPrice = basePrice + (( comboPrice) * (1 + (product?.tax?.rate || 0) / 100));
+  const selectedComboStock = selectedCombo
+    ? getCombinationStock(product, selectedCombo.id)
+    : sumProductStock(product);
+  const quantityValue = Number(number) || 0;
+  const isQuantityInvalid = quantityValue < 1;
+  const isStockInsufficient = selectedComboStock !== 0 && quantityValue > selectedComboStock;
+
+  const getComboLabel = (combo) => {
+    if (!combo) return "";
+    const names = (combo.option_values || [])
+      .map((option) => option?.name)
+      .filter(Boolean);
+    return combo ? (names.length > 0 ? names.join(" / ") : `#${combo.id}` ): "";
+  };
+
+  const handleAddToCart = async () => {
+    setLoadingAdd(true);
+    try {
+
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      
+      const existingIndex = cart.findIndex(
+        (item) =>
+          String(item.productId) === String(product.id) && String(item.comboId) === String(selectedComboId)
+      );
+      if (existingIndex !== -1) {
+        cart[existingIndex].qty += quantityValue;
+        if (cart[existingIndex].qty > selectedComboStock) {
+          alert("Quantite demandee depasse le stock disponible pour cette combinaison.");
+          cart[existingIndex].qty = selectedComboStock;
+        }
+        cart[existingIndex].price = displayPrice;
+        cart[existingIndex].productname = product.name;
+        cart[existingIndex].optionsName = getComboLabel(selectedCombo);
+      } else {
+        cart.push({
+          productId: product.id,
+          productname : product.name,
+          comboId: selectedComboId!== "" || selectedComboId !== undefined  ? selectedComboId : 0,
+          optionsName: getComboLabel(selectedCombo),
+          reference : product.reference,
+          price_ht: product.price ,
+          price_add : comboPrice,
+          tax : product?.tax?.rate || 0,
+          price: displayPrice,
+          qty: quantityValue
+        });
+      }
+      const idCustomer = JSON.parse(localStorage.getItem("customer"))?.id || null;
+      const idGuest = localStorage.getItem("guestId") || null;
+      const cartId = localStorage.getItem("cartId");
+
+      const result = await handleCart(idCustomer, idGuest, cartId, cart);
+      console.log("Cart updated/saved: ", result);
+      
+      localStorage.setItem("cart", JSON.stringify(cart));
+    } catch (error) {
+      console.error("Error adding to cart: ", error);
+      alert("Une erreur est survenue lors de l'ajout au panier. Veuillez réessayer.");
+    }
+    setLoadingAdd(false);
   };
 
   if (loading) {
@@ -89,7 +165,7 @@ export default function ProductDetail() {
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide bg-red-50 text-red-700 border border-red-200">
                   HOT
                 </span>
-              )}
+               )}
               {isNew(product.available_date) && !isHot(product.available_date) && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-200">
                   NEW
@@ -104,13 +180,64 @@ export default function ProductDetail() {
           <div className="text-right">
             <p className="text-xs text-gray-500">Prix TTC</p>
             <p className="text-2xl font-bold text-gray-900">
-              {formatPrice(product.price * (1 + (product.tax?.rate || 0) / 100))}
+              {formatPrice(displayPrice)}
             </p>
             <p className="text-xs text-gray-500 mt-2">Prix d'achat</p>
             <p className="text-lg font-semibold text-gray-700">
               {formatPrice(product.wholesale_price)}
             </p>
           </div>
+        </div>
+        <div className="mt-6 flex gap-4">
+
+        {product.combinations?.length > 0 && (
+          <div className="mt-6">
+            <label htmlFor="options" className="mb-2 block text-sm font-medium text-gray-700">
+              Choisir une combinaison
+            </label>
+            <select
+              id="options"
+              value={selectedComboId}
+              onChange={(e) => setSelectedComboId(e.target.value)}
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+              {product.combinations.map((combo) => (
+                <option key={combo.id} value={combo.id}>
+                  {getComboLabel(combo)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+          <div className="mt-6">
+            <label htmlFor="quantity" className="mb-2 block text-sm font-medium text-gray-700">
+              Quantite
+            </label>
+            <input
+              id="quantity"
+              className="w-20 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            type="number"
+            min="1"
+            value={number}
+            onChange={(e) => setNumber(e.target.value)}
+            />
+          </div>
+          <div className="mt-6 flex items-end">
+            <button
+              type="button"
+              disabled={isQuantityInvalid || isStockInsufficient || loadingAdd}
+              onClick={handleAddToCart}
+              className={`rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 ${isQuantityInvalid || isStockInsufficient || loadingAdd ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {loadingAdd ? "Ajout..." : "Ajouter au panier"}
+            </button>
+          </div>
+          {isStockInsufficient && (
+            <p className="mt-2 text-sm text-red-600">
+              Stock insuffisant pour la combinaison selectionnee.
+            </p>
+          )}
+          
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 mt-6">
@@ -159,9 +286,6 @@ export default function ProductDetail() {
                   className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-3"
                 >
                   <div>
-                    <p className="text-sm font-medium text-gray-800">
-                      #{combo.id}
-                    </p>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {combo.option_values?.map((option) => (
                         <span
@@ -175,10 +299,13 @@ export default function ProductDetail() {
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-gray-500">Prix TTC</p>
-                    <p className="text-sm font-semibold text-gray-800">
-                      {formatPrice(
-                        combo.price * (1 + (product.tax?.rate || 0) / 100)
-                      )}
+                    <p className="text-sm font-semibold text-gray-800"> 
+                       {formatPrice(
+                        (basePrice + (combo.price) * (1 + (product.tax?.rate || 0) / 100))
+                      )} 
+                    </p>
+                    <p className="text-sm font-semibold text-gray-400">
+                      {formatPrice(basePrice)} + {formatPrice(combo.price)}
                     </p>
                     <p className="text-xs text-gray-500 mt-2">Quantite</p>
                     <p className="text-sm font-semibold text-gray-800">

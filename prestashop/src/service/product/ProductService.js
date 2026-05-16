@@ -54,13 +54,14 @@ async function chargeProducts(taxes , categories , optionValues , options , comb
             });
             
             const tax = taxes.find(t => String(t.id_tax_rules_group) === String(product.id_tax_rules_group["#text"]));
-            const toAdd = combinationsFormatted.length > 0 ? combinationsFormatted[0].price : 0;
+            // const toAdd = combinationsFormatted.length > 0 ;
             return {
                 id : product.id,
                 category : category ,
                 tax : tax,
+                reference : product.reference, 
                 name : product.name.language["#text"],
-                price : parseFloat(product.price) + toAdd ,
+                price : parseFloat(product.price) ,
                 wholesale_price : product.wholesale_price,
                 option_values : optionValuesFormatted,
                 combinations : combinationsFormatted,

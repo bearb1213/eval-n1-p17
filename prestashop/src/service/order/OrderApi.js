@@ -15,7 +15,27 @@ async function getAllOrders() {
             {"display":"full"})
         const json = xmlToJson.parse(result);
         const orders = json.prestashop.orders.order;
-        console.log(orders);
+        // console.log(orders);
+
+        return Array.isArray(orders) ? orders : orders ? [orders] : [];
+    } catch (e) {
+        console.log(e)
+        throw e;
+    }
+}
+async function getOrderByCustomerId(id) {
+    try{
+        const result = await ApiAction(
+            apiUrl ,
+            "GET" ,
+            {
+                "display":"full",
+                "filter[id_customer]": id
+            }
+        )
+        const json = xmlToJson.parse(result);
+        const orders = json.prestashop.orders.order;
+        // console.log(orders);
 
         return Array.isArray(orders) ? orders : orders ? [orders] : [];
     } catch (e) {
@@ -87,8 +107,8 @@ async function saveOrder(order) {
                 order: order
             }
         });
-        // console.log("Order XML:");
-        // console.log(orderXml);
+        console.log("Order XML:");
+        console.log(orderXml);
         const result = await ApiAction(
             apiUrl ,
             "POST" ,
@@ -151,10 +171,11 @@ async function patchOrder(order) {
 
 export {
     getAllOrders , 
+    getOrderByCustomerId,
     deleteOrder, 
     getAllIdOrders, 
     deleteAllOrders , 
     saveOrder ,
     updateOrder ,
-    patchOrder
+    patchOrder 
 };

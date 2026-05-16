@@ -47,7 +47,7 @@ async function getAllIdCarts() {
             {"display":"[id]"}
         );
         const json = xmlToJson.parse(result);
-        const carts = json.prestashop.carts;
+        const carts = json.prestashop;
         console.log(carts);
 
         return carts;
@@ -89,8 +89,8 @@ async function saveCart(cart){
                 }
             }
         );
-        // console.log("XML to send : \n");
-        // console.log(cartXml);
+        console.log("XML to send : \n");
+        console.log(cartXml);
         const result = await ApiAction(
             apiUrl ,
             "POST" ,
@@ -145,6 +145,31 @@ async function patchCart(cart){
         throw e;
     }
 }
+async function updateCart(id,cart){
+    try {
+        const cartXml = jsonToXml.build(
+            {
+                prestashop: {
+                    "@_xmlns:xlink": "http://www.w3.org/1999/xlink",
+                    cart: cart
+                }
+            }
+        );
+        // console.log("XML to send : \n");
+        // console.log(cartXml);
+        const result = await ApiAction(
+            apiUrl+"/"+id ,
+            "PUT" ,
+            {},
+            cartXml
+        );
+        const json = xmlToJson.parse(result);
+        return json.prestashop.cart;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
 
 export {
     getAllCarts , 
@@ -154,4 +179,5 @@ export {
     saveCart,
     getCartDisplayFull,
     patchCart,
+    updateCart,
 };

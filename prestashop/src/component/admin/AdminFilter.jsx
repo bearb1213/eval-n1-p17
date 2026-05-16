@@ -29,7 +29,7 @@ export default function AdminFilter() {
     const handleLogout = () => {
         logoutAdmin();
         setAdmin(null);
-        navigate("/loginAdmin");
+        navigate("/customers");
     };
 
     const links = [
@@ -39,7 +39,8 @@ export default function AdminFilter() {
             isOpenable:true ,
             children : [
                 { name : "Cleaning data" , path:"/admin/data/clean"},
-                { name : "Upload data" , path:"/admin/data/upload"}
+                { name : "Upload data" , path:"/admin/data/upload"},
+                { name : "Listing" , path:"/admin/data/listing"}
             ]
         },
         {

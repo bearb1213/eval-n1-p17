@@ -131,6 +131,7 @@ async function getAddressesLastNameAndId(){
 export {
     getAllAddresses , 
     deleteAddress , 
+    getAllIdAddresses,
     deleteAllAddresses ,
     saveAddress , 
     getAddressesLastNameAndId,

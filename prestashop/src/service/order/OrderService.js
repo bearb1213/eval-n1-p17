@@ -1,4 +1,4 @@
-import { getAllOrders } from "./OrderApi";
+import { getAllOrders , getOrderByCustomerId } from "./OrderApi";
 import { getAllCustomers } from "../customer/CustomerApi";
 import { getAllCarts } from "../cart/CartApi";
 import { getAllOrderStates } from "./OrderStateApi";
@@ -10,10 +10,26 @@ async function getOrders(){
         const carts = await getAllCarts();
         const orderStates = await getAllOrderStates();
 
-        console.log("orders dans getOrders " , orders);
-        console.log("customers" , customers);
-        console.log("carts" , carts);
-        console.log("orderStates" , orderStates);
+        // console.log("orders dans getOrders " , orders);
+        // console.log("customers" , customers);
+        // console.log("carts" , carts);
+        // console.log("orderStates" , orderStates);
+        return modifyOrder(orders , customers , carts , orderStates);   
+    } catch (error) {
+        throw error;
+    }
+}
+async function getOrdersByCustomerId(customerId){
+try {
+        const orders = await chargeOrderByCustomerId(customerId);
+        const customers = await getAllCustomers();
+        const carts = await getAllCarts();
+        const orderStates = await getAllOrderStates();
+
+        // console.log("orders dans getOrders " , orders);
+        // console.log("customers" , customers);
+        // console.log("carts" , carts);
+        // console.log("orderStates" , orderStates);
         return modifyOrder(orders , customers , carts , orderStates);   
     } catch (error) {
         throw error;
@@ -23,6 +39,33 @@ async function getOrders(){
 async function chargeOrder(){
     try {
         const orders = await getAllOrders();
+        // console.log("orders dans change " , orders);
+        return orders.map(order => {
+            return {
+                id : order.id,
+                id_address : order.id_address_delivery["#text"] ? order.id_address_delivery["#text"] : order.id_address_invoice["#text"]? order.id_address_invoice["#text"] : 0,
+                id_cart : order.id_cart["#text"],
+                id_customer : order.id_customer["#text"],
+                current_state : order.current_state["#text"],
+                invoice_date : order.invoice_date,
+                date_add : order.date_add,
+                secure_key : order.secure_key,
+                total_paid : order.total_paid,
+                total_paid_tax_incl : order.total_paid_tax_incl,
+                total_paid_tax_excl : order.total_paid_tax_excl,
+                total_paid_real : order.total_paid_real,
+                reference : order.reference,
+                order_row : Array.isArray(order.associations.order_rows.order_row) ? order.associations.order_rows.order_row : [order.associations.order_rows.order_row]
+            }
+        });
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function chargeOrderByCustomerId(customerId){
+    try {
+        const orders = await getOrderByCustomerId(customerId);
         console.log("orders dans change " , orders);
         return orders.map(order => {
             return {
@@ -91,5 +134,6 @@ async function changeStateOrder(id , newState){
 
 export {
     getOrders,
-    changeStateOrder
+    changeStateOrder,
+    getOrdersByCustomerId
 };

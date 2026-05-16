@@ -6,6 +6,7 @@ export default function OrderTable({
   onToggle,
   stateOptions,
   onChangeState,
+  isAdmin = false,
 }) {
   return (
     <div className="overflow-x-auto">
@@ -33,6 +34,7 @@ export default function OrderTable({
               onToggle={onToggle}
               stateOptions={stateOptions}
               onChangeState={onChangeState}
+              isAdmin={isAdmin}
             />
           ))}
         </tbody>
