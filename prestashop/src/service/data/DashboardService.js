@@ -20,14 +20,20 @@ function buildDashboardStats(orders) {
         const dateKey = extractDateKey(order.date_add);
         const amount = toNumber(order.total_paid_tax_incl ?? order.total_paid);
 
+        const stateKey = order.orderState?.name || String(order.current_state || "Unknown");
         if (dateKey) {
-            const daily = dailyMap.get(dateKey) || { date: dateKey, count: 0, total: 0 };
+            const daily = dailyMap.get(dateKey) || {
+                date: dateKey,
+                count: 0,
+                total: 0,
+                stateCounts: new Map(),
+            };
             daily.count += 1;
             daily.total += amount;
+            daily.stateCounts.set(stateKey, (daily.stateCounts.get(stateKey) || 0) + 1);
             dailyMap.set(dateKey, daily);
         }
 
-        const stateKey = order.orderState?.name || String(order.current_state || "Unknown");
         const state = stateMap.get(stateKey) || { state: stateKey, count: 0, total: 0 };
         state.count += 1;
         state.total += amount;
@@ -36,9 +42,14 @@ function buildDashboardStats(orders) {
         grandTotal += amount;
     });
 
-    const dailyStats = Array.from(dailyMap.values()).sort((a, b) =>
-        a.date.localeCompare(b.date)
-    );
+    const dailyStats = Array.from(dailyMap.values())
+        .map(day => ({
+            ...day,
+            stateCounts: Array.from(day.stateCounts.entries())
+                .map(([state, count]) => ({ state, count }))
+                .sort((a, b) => b.count - a.count),
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
     const totalsByState = Array.from(stateMap.values()).sort((a, b) =>
         b.total - a.total
     );

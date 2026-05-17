@@ -36,7 +36,7 @@ async function deleteAddress(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop.address;
+        return json.prestashop;
     } catch (e) {
         console.log(e);
         throw e;

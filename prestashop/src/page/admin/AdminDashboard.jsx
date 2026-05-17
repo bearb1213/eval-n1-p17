@@ -78,7 +78,18 @@ export default function AdminDashboard() {
                             {dailyStats.map(day => (
                                 <tr key={day.date}>
                                     <td className="px-3 py-2">{day.date}</td>
-                                    <td className="px-3 py-2">{day.count}</td>
+                                    <td className="px-3 py-2">
+                                        <div className="font-medium text-gray-800">{day.count}</div>
+                                        {day.stateCounts?.length ? (
+                                            <div className="mt-1 space-y-1 text-xs text-gray-500">
+                                                {day.stateCounts.map(state => (
+                                                    <div key={state.state}>
+                                                        {state.state}: {state.count}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : null}
+                                    </td>
                                     <td className="px-3 py-2">{formatAmount(day.total)}</td>
                                     <td className="px-3 py-2">
                                         <div className="h-2 w-full rounded bg-gray-100">

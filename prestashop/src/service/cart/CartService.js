@@ -32,6 +32,8 @@ async function handleCart(idCustomer ,idGuest, idCart ,cart){
                     id_customer : idCustomer ? idCustomer : 0 ,
                     id_currency: currencyId,
                     id_lang: langId,
+                    id_shop : 1,
+                    id_shop_group : 1,
                     id_guest : idGuest ? idGuest : 0 ,
                     associations : {
                         cart_rows : {
@@ -53,6 +55,8 @@ async function handleCart(idCustomer ,idGuest, idCart ,cart){
                     id_guest : idGuest ? idGuest : 0 ,
                     id_currency: currencyId,
                     id_lang: langId,
+                    id_shop : 1,
+                    id_shop_group : 1,
                     associations : {
                         cart_rows : {
                             cart_row : associatedCart
@@ -73,6 +77,9 @@ async function handleCart(idCustomer ,idGuest, idCart ,cart){
 
 async function createOrder(customer ,idGuest, idCart ,cart , products ){
     try {
+        
+        await handleCart(customer.id ,idGuest, idCart ,cart);
+
         let prixTTC = 0;
         let prixHT = 0;
         const idAddress = await getIdAddress();
@@ -102,9 +109,11 @@ async function createOrder(customer ,idGuest, idCart ,cart , products ){
             id_address_delivery : idAddress, 
             id_address_invoice : idAddress,
             id_cart : idCart,
-            id_currency : currencyId,
-            id_lang : langId,
+            id_currency : 1,
+            id_lang : 1,
             id_customer : customer?.id || 0,
+            id_shop : 1,
+            id_shop_group : 1,
             // id_guest : idGuest ? idGuest : 0 ,
             id_carrier : carrierId,
             current_state : idState,

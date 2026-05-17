@@ -64,6 +64,8 @@ async function cartComposition(file , products, optionValues ,combinations , cus
                     date_add : dateFormated,
                     id_currency : currencyId,
                     id_lang : langId,
+                    id_shop : 1,
+                    id_shop_group : 1,
                     associations :{
                         cart_rows : {
                             cart_row : cart

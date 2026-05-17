@@ -4,11 +4,39 @@ import {
     getAllStockAvailable,
 
 } from "../stock/StockAvailableApi.js";
+import { saveStockMouvement , patchStockMouvement } from "../stock/StockMouvementApi.js";
+
 
 async function getStock(file, products , option_values , combinations){
     const stock = await getAllStock(file, products , option_values , combinations);
     const stockWithId = await saveStock(stock);
     return stockWithId;
+}
+async function getStockWare(stockAvailable) {
+    try {
+        const retour = [];
+        for (const stock of stockAvailable) {
+            const id_product = stock.id_product["#text"] ;
+            const id_product_attribute = stock.id_product_attribute !== 0 || stock.id_product_attribute !== "0"
+                                            ? stock.id_product_attribute["#text"] || stock.id_product_attribute : 0;
+            const stockToSend = {
+                id_warehouse : 1,
+                price_te : 1,
+                physical_quantity : stock.quantity,
+                id_product : id_product,
+                id_product_attribute : id_product_attribute,
+                usable_quantity : stock.quantity,
+            }
+            const result = await saveStock(stockToSend);
+            stockToSend.id = result.id;
+            retour.push(stockToSend);
+        
+        }
+        return retour;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
 }
 
 async function getAllStock(file, products , option_values , combinations){
@@ -73,6 +101,22 @@ async function saveStock(stockAvailable) {
     for (const stock of stockAvailable) {
         try {
             const updatedStock = await updateStockAvailable(stock.id, stock);
+            const move = await saveStockMouvement({
+                id_product: stock.id_product["#text"],
+                id_product_attribute: stock.id_product_attribute !== 0 || stock.id_product_attribute !== "0"
+                                        ? stock.id_product_attribute["#text"] : 0  ,
+                id_employee: 1,
+                id_stock_mvt_reason : 12 , 
+                sign : 1,
+                id_stock : stock.id,
+                price_te: 1,
+                physical_quantity : stock.quantity,
+                date_add : "2024-06-01 00:00:00",
+            });
+            await patchStockMouvement({
+                id : move.id,
+                date_add : "2024-06-01 00:00:00"
+            })
             savedStock.push({ ...stock, id: updatedStock.id });
         } catch (error) {
             console.log(error);
@@ -84,4 +128,5 @@ async function saveStock(stockAvailable) {
 
 export {
     getStock ,
+    getStockWare ,
 };

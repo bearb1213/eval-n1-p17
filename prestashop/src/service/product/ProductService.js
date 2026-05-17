@@ -15,8 +15,8 @@ async function getProducts() {
     const stock = await chargeStock();
 
     const products = await chargeProducts(taxes , categories , optionValues , options , combinations , stock);
-    console.log("taxes", taxes);
-    console.log("products", products);
+    // console.log("taxes", taxes);
+    // console.log("products", products);
     return products;
 }
 

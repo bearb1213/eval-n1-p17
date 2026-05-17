@@ -40,7 +40,7 @@ export default function AdminFilter() {
             children : [
                 { name : "Cleaning data" , path:"/admin/data/clean"},
                 { name : "Upload data" , path:"/admin/data/upload"},
-                { name : "Listing" , path:"/admin/data/listing"}
+                { name : "Listing" , path:"/admin/data/listing"},
             ]
         },
         {
@@ -48,6 +48,12 @@ export default function AdminFilter() {
             path: "/admin/orders",
             isOpenable: false,
         },
+        { 
+            name : "Stock" , 
+            path:"/admin/stock" ,
+            isOpenable: false,
+        }
+
     ];
 
     return (

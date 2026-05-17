@@ -41,10 +41,10 @@ export default function OrderRow({
         </td>
         <td className="px-4 py-3">
           <div className="flex flex-col gap-2">
-            {!isEditingState && (
+            {!isEditingState  && (
               <div className="flex items-center gap-2">
                 <OrderStateBadge stateName={stateName} />
-                {isAdmin && (
+                {isAdmin && order.is_order &&  (
                   <button
                     type="button"
                     className="text-xs text-blue-600 hover:text-blue-800"

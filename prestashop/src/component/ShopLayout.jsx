@@ -140,6 +140,9 @@ export default function ShopLayout() {
         sessionStorage.setItem("reload", "reload");
         navigate("/products" );
     }
+    const handleRefraish = () => {
+        navigate("/products?reload=2" );
+    }
 
     const handleCreateOrder = async () => {
         if (loadingOrderCreate) {
@@ -192,6 +195,7 @@ export default function ShopLayout() {
         isLoggedIn={isLoggedIn}
         onToggleCart={handleToggleCart}
         onToggleLogin={handleToggleLogin}
+        onRefresh={handleRefraish}
       />
       <CartDrawer
         open={cartOpen}

@@ -1,10 +1,12 @@
 import { use, useEffect ,useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function NavBar({ 
                                 userName, 
                                 isLoggedIn, 
                                 onToggleCart, 
                                 onToggleLogin , 
+                                onRefresh , 
     }) {
     return (
     <nav className="w-full bg-white shadow-md">
@@ -30,6 +32,14 @@ export default function NavBar({
           >
             {isLoggedIn ? "Logout" : "Login"}
           </button>
+          <a
+            // type="button"
+            // onClick={onRefresh}
+            href="/products?reload=2"
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          >
+            Actualiser
+          </a>
         </div>
         )} {!isLoggedIn && (
         <div className="flex items-center gap-3">
@@ -39,6 +49,13 @@ export default function NavBar({
           className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
           >
             {isLoggedIn ? "Logout" : "Login"}
+          </button>
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          >
+            Actualiser
           </button>
         </div>
         )}

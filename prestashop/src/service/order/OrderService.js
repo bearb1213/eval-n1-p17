@@ -1,20 +1,34 @@
 import { getAllOrders , getOrderByCustomerId } from "./OrderApi";
 import { getAllCustomers } from "../customer/CustomerApi";
-import { getAllCarts } from "../cart/CartApi";
+import { getAllCarts , getAllCartsByCustomerId } from "../cart/CartApi";
 import { getAllOrderStates } from "./OrderStateApi";
 import { saveOrderHistory } from "./OrderHistoryApi";
+import { getProducts } from "../product/ProductService";
+
 async function getOrders(){
     try {
         const orders = await chargeOrder();
         const customers = await getAllCustomers();
         const carts = await getAllCarts();
         const orderStates = await getAllOrderStates();
+        const products = await getProducts();
 
         // console.log("orders dans getOrders " , orders);
         // console.log("customers" , customers);
         // console.log("carts" , carts);
         // console.log("orderStates" , orderStates);
-        return modifyOrder(orders , customers , carts , orderStates);   
+        const orderData = await modifyOrder(orders , customers , carts , orderStates);   
+        // console.log("orderData" , orderData);
+        const cartNotInOrders = await getCartNotInOrders(carts , orders);
+        console.log("cartNotInOrders" , cartNotInOrders);
+        const modifiedCart = await modifyCart(cartNotInOrders , customers , products);
+        console.log("modifiedCart" , modifiedCart);
+        // // const modifiedCart = []
+        const combinedData = [...orderData, ...modifiedCart];
+        console.log("combinedData" , combinedData);
+        return combinedData;
+
+        // return orderData;   
     } catch (error) {
         throw error;
     }
@@ -23,14 +37,26 @@ async function getOrdersByCustomerId(customerId){
 try {
         const orders = await chargeOrderByCustomerId(customerId);
         const customers = await getAllCustomers();
-        const carts = await getAllCarts();
+        const carts = await getAllCartsByCustomerId(customerId);
         const orderStates = await getAllOrderStates();
+        const products = await getProducts();
 
         // console.log("orders dans getOrders " , orders);
         // console.log("customers" , customers);
         // console.log("carts" , carts);
         // console.log("orderStates" , orderStates);
-        return modifyOrder(orders , customers , carts , orderStates);   
+        const orderData = await modifyOrder(orders , customers , carts , orderStates);   
+        // console.log("orderData" , orderData);
+        const cartNotInOrders = await getCartNotInOrders(carts , orders);
+        console.log("cartNotInOrders" , cartNotInOrders);
+        const modifiedCart = await modifyCart(cartNotInOrders , customers , products);
+        console.log("modifiedCart" , modifiedCart);
+        // // const modifiedCart = []
+        const combinedData = [...orderData, ...modifiedCart];
+        console.log("combinedData" , combinedData);
+        return combinedData;
+
+        // return orderData;    
     } catch (error) {
         throw error;
     }
@@ -50,6 +76,7 @@ async function chargeOrder(){
                 invoice_date : order.invoice_date,
                 date_add : order.date_add,
                 secure_key : order.secure_key,
+                is_order : true,
                 total_paid : order.total_paid,
                 total_paid_tax_incl : order.total_paid_tax_incl,
                 total_paid_tax_excl : order.total_paid_tax_excl,
@@ -77,10 +104,12 @@ async function chargeOrderByCustomerId(customerId){
                 invoice_date : order.invoice_date,
                 date_add : order.date_add,
                 secure_key : order.secure_key,
+                is_order : true,
                 total_paid : order.total_paid,
                 total_paid_tax_incl : order.total_paid_tax_incl,
                 total_paid_tax_excl : order.total_paid_tax_excl,
                 total_paid_real : order.total_paid_real,
+                total_can_paid : order.total_paid,
                 reference : order.reference,
                 order_row : Array.isArray(order.associations.order_rows.order_row) ? order.associations.order_rows.order_row : [order.associations.order_rows.order_row]
             }
@@ -130,6 +159,90 @@ async function changeStateOrder(id , newState){
         throw error;
     }
     return newState
+}
+async function getCartNotInOrders(Carts , Orders){
+    try {
+        const cartsInOrders = Orders.map(order => order.id_cart);
+        return Carts.filter(cart => !cartsInOrders.includes(cart.id));
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+async function modifyCart(carts , customers , products){
+    try {
+        // console.log("carts dans modifyCart" , customers);
+        return carts.map(cart => {
+            // console.log("cart dans modifyCart" , cart);
+            let priceHt = 0;
+            let priceTtc = 0;
+            const customerFound = customers.find(customer => customer.id === (cart.id_customer["#text"] || cart.id_customer));
+            // console.log("customerFound dans modifyCart" , customerFound);
+            if(!customerFound) return null;
+            const cartRow = cart.associations.cart_rows.cart_row 
+                            ? (
+                                Array.isArray(cart.associations.cart_rows.cart_row) 
+                                ? cart.associations.cart_rows.cart_row 
+                                : [cart.associations.cart_rows.cart_row]
+                            ) 
+                            : [];
+            // console.log("cartRow" , cartRow);
+            const orderRow = cartRow.map(row => {
+                const productFound = products.find(product => product.id === row.id_product["#text"] || product.id === row.id_product);
+                if(!productFound) return null;
+                const combination = productFound.combinations && productFound.combinations.length > 0 
+                    ? productFound.combinations.find(comb => String(comb.id) === String(row.id_product_attribute["#text"] || row.id_product_attribute)) : null;
+                let priceht = productFound ? parseFloat(combination ? combination.price + productFound.price : productFound.price ) : 0;
+                priceHt += priceht * parseInt(row.quantity);
+                priceTtc += priceht * parseInt(row.quantity) * (1 + (productFound.tax.rate/100));
+                return {
+                    product_id : row.id_product,
+                    product_attribute_id : row.id_product_attribute,
+                    product_quantity : row.quantity,
+                    product_name : productFound ? productFound.name : "Unknown",
+                    product_reference : productFound ? productFound.reference : "Unknown",
+                    unit_price_tax_excl : productFound ? priceht : 0,
+                    unit_price_tax_incl : productFound ? priceht * (1 + (productFound.tax.rate/100)) : 0,
+                    product_price : productFound ? priceht  : 0,
+                }
+            }).filter(row => row !== null);
+            return {
+                id : "IsPanier" + cart.id,
+                id_address : 0,
+                id_cart : cart.id,
+                id_customer : cart.id_customer["#text"],
+                current_state : "0",
+                invoice_date : null,
+                date_add : cart.date_add,
+                is_order : false,
+                secure_key : cart.secure_key,
+                total_paid : priceTtc,
+                total_paid_tax_incl : priceTtc,
+                total_paid_tax_excl : priceHt,
+                total_paid_real : 0,
+                total_can_paid : priceTtc,
+                reference : "Panier n°" + cart.id,
+                order_row : orderRow,
+                customer : {
+                    id : customerFound.id,
+                    firstname : customerFound.firstname,
+                    lastname : customerFound.lastname,
+                    email : customerFound.email
+                } ,
+                cart : {
+                    id : cart.id,
+                    carts : Array.isArray(cart.associations.cart_rows.cart_row) ? cart.associations.cart_rows.cart_row : [cart.associations.cart_rows.cart_row]
+                } ,
+                orderState : {
+                    id : 0,
+                    name : "Dans le panier"
+                }
+            }
+        }).filter(cart => cart !== null);
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
 }
 
 export {

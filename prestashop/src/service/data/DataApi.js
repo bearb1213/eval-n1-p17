@@ -45,7 +45,7 @@ import {
     getOptions ,
     getOptionValues, 
 } from "./DataCombination";
-import { getStock } from "./DataStock";
+import { getStock, getStockWare } from "./DataStock";
 import { getCustomers } from "./DataCustomer";
 import { getAddresses } from "./DataAddress.js";
 import { getCarts } from "./DataCart.js";
@@ -55,25 +55,25 @@ async function deleteAllData(setFonctionCalled) {
     const fonctionCalled = [];
     try {
         const fonctions = [
-            {name : "Delete All Order Slips", func : deleteAllOrderSlips} , 
-            {name : "Delete All Order Histories", func : deleteAllOrderHistories},
-            {name : "Delete All Order Payments", func : deleteAllOrderPayments},
-            {name : "Delete All Order Cart Rules", func : deleteAllOrderCartRules},
-            {name : "Delete All Order Carriers", func : deleteAllOrderCarriers},
-            {name : "Delete All Order Details", func : deleteAllOrderDetails},
-            {name : "Delete All Order Invoices", func : deleteAllOrderInvoices},
             {name : "Delete All Customer Threads", func : deleteAllCustomerThreads},
             {name : "Delete All Customer Messages", func : deleteAllCustomerMessages},
             {name : "Delete All Messages", func : deleteAllMessages},
             {name : "Delete All Specific Prices", func : deleteAllSpecificPrices},
             {name : "Delete All Customizations", func : deleteAllCustomizations},
+            {name : "Delete All Order Histories", func : deleteAllOrderHistories},
+            {name : "Delete All Order Slips", func : deleteAllOrderSlips} , 
+            {name : "Delete All Order Payments", func : deleteAllOrderPayments},
+            {name : "Delete All Order Cart Rules", func : deleteAllOrderCartRules},
+            {name : "Delete All Order Carriers", func : deleteAllOrderCarriers},
+            {name : "Delete All Order Details", func : deleteAllOrderDetails},
+            {name : "Delete All Order Invoices", func : deleteAllOrderInvoices},
             {name : "Delete All Orders", func : deleteAllOrders},
             {name : "Delete All Carts", func : deleteAllCarts},
             {name : "Delete All Cart Rules", func : deleteAllCartRules},
             {name : "Delete All Guests", func : deleteAllGuests},
             {name : "Delete All Customers", func : deleteAllCustomers},
-            {name : "Delete All Product Suppliers", func : deleteAllProductSuppliers},
             {name : "Delete All Tags", func : deleteAllTags},
+            {name : "Delete All Product Suppliers", func : deleteAllProductSuppliers},
             {name : "Delete All Product Feature Values", func : deleteAllProductFeatureValues},
             {name : "Delete All Product Features", func : deleteAllProductFeatures},
             {name : "Delete All Combinations", func : deleteAllCombinations},
@@ -141,6 +141,8 @@ async function UploadFile(file) {
     const stock = await getStock(file2, products , optionValues , combinations);
     console.log("Stock with ID:", stock);
 
+    // const stockWare = await getStockWare(stock);
+    // console.log("Stock Ware with ID:", stockWare);
 
 // FILE 3 : orders 
     // customers
@@ -156,7 +158,7 @@ async function UploadFile(file) {
                             );
     console.log("carts with ID:",cart);
     // orders
-    const orders = await getOrders(file3 , products , cart , customers , addresses , combinations);
+    const orders = await getOrders(file3 , products , cart , customers , addresses , combinations , stock);
     console.log("orders with ID:", orders);
     
 }

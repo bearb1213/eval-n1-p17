@@ -1,48 +1,50 @@
 import {getAllOrderStates} from "../order/OrderStateApi.js";
 import { saveOrder,patchOrder } from "../order/OrderApi.js";
 import { saveOrderHistory } from "../order/OrderHistoryApi.js";
+import { saveStockMouvement ,patchStockMouvement } from "../stock/StockMouvementApi.js";
 
 const carrierId = 1;
 const currencyId = 1;
 const langId = 1; 
 const module = "ps_cashondelivery";
 
-async function getOrders(file , products , carts , customers , addresses , combinations) {
+async function getOrders(file , products , carts , customers , addresses , combinations , stock) {
+    const mvtStock = [];
     const orderStates = await getOrderStates();
     // console.log("orderStates" , orderStates);
-    const orders = await createOrder(file , products , carts , customers , addresses , combinations , orderStates);
+    const orders = await createOrder(file , products , carts , customers , addresses , combinations , orderStates , mvtStock);
     // console.log("orders" , orders);
-    const savedOrders = await saveOrders(orders);
+    const savedOrders = await saveOrders(orders , stock , mvtStock);
     // console.log("savedOrders" , savedOrders);
     return savedOrders;
 }
 
-async function createOrder(file , products , carts , customers , addresses , combinations , orderStates) {
+async function createOrder(file , products , carts , customers , addresses , combinations , orderStates , mvtStock) {
     const retour = [];
     for(const item of file) {
-        console.log("item" , item);
+        // console.log("item" , item);
 
         if(!item["etat"]) continue ;
         const customerFound = customers.find(c => c.email === item["email"]);
-        console.log("customerFound" , customerFound);
+        // console.log("customerFound" , customerFound);
         if(!customerFound) continue ;
 
         const cartFound = carts.find(c => c.name === item["achat"] && c.id_customer === customerFound.id);
-        console.log("cartFound" , cartFound);
+        // console.log("cartFound" , cartFound);
         if(!cartFound) continue ;
     
-        const orderStateFound = orderStates.find(os => os.name === item["etat"].toLowerCase());
-        console.log("orderStateFound" , orderStateFound);
+        const orderStateFound = orderStates.find(os => os.name.trim() === item["etat"].toLowerCase().trim());
+        // console.log("orderStateFound" , orderStateFound);
         if(!orderStateFound) continue ;
 
         const addressFound = addresses.find(a => a.address1 === item["adresse"]);
-        console.log("addressFound" , addressFound);
+        // console.log("addressFound" , addressFound);
         if(!addressFound) continue ;
 
-        const {order_row , prix_ht , prix_ttc} = await createOrderRow(cartFound , products , combinations);
-        console.log("orderRow" , order_row);
-        console.log("prix_ht" , prix_ht);
-        console.log("prix_ttc" , prix_ttc);
+        const {order_row , prix_ht , prix_ttc} = await createOrderRow(cartFound , products , combinations , mvtStock);
+        // console.log("orderRow" , order_row);
+        // console.log("prix_ht" , prix_ht);
+        // console.log("prix_ttc" , prix_ttc);
         
         const order = {
             
@@ -54,6 +56,8 @@ async function createOrder(file , products , carts , customers , addresses , com
             id_customer : customerFound.id,
             id_carrier : carrierId,
             current_state : orderStateFound.id,
+            id_shop : 1,
+            id_shop_group : 1,
             module : module,
             payment : "Manual",
             total_products : parseFloat(prix_ht).toFixed(5),
@@ -99,10 +103,11 @@ async function getOrderStates(){
         throw error;
     }
 }
-async function createOrderRow(cart , products , combinations){
+async function createOrderRow(cart , products , combinations , mvtStock) {
     const orderRow = [];
     let prixTotalHT = 0.;
     let prixTotalTTC = 0.;
+    const stockUpdates = [];
     // console.log("Creating order row for cart:", cart);
     for(const item of cart.associations.cart_rows.cart_row){
         // console.log("Processing cart item:", item);
@@ -128,15 +133,25 @@ async function createOrderRow(cart , products , combinations){
             product_reference : productFound.reference,
             id_customization: 0
         });
+        stockUpdates.push({
+            id_product: item.id_product,
+            id_product_attribute: item.id_product_attribute,
+            quantity: item.quantity
+        });
     }
+
+    mvtStock.push(stockUpdates);
+    
     return {
         order_row: orderRow,
         prix_ht: prixTotalHT,
         prix_ttc: prixTotalTTC
     };
 }
-async function saveOrders(orders) {
+async function saveOrders(orders , stock , mvtStock) {
     const savedOrders = [];
+    let index = 0 ;
+    console.log("stock" , stock);
     for(const order of orders) {
         try {
             const savedOrder = await saveOrder(order);
@@ -153,8 +168,49 @@ async function saveOrders(orders) {
                 id_address_delivery : order.id_address_delivery,
                 id_address_invoice : order.id_address_invoice,
             });
+            if (order.current_state === 2 || order.current_state === "2") {
+                const stockUpdates = mvtStock[index];
+                console.log("Stock updates for order:", stockUpdates);
+                for(const update of stockUpdates) {
+                    const stockItem = stock.find(s => 
+                        (
+                            s.id_product === update.id_product 
+                            || s.id_product["#text"] === update.id_product
+                        ) 
+                        && 
+                        (
+                            s.id_product_attribute === update.id_product_attribute
+                            || s.id_product_attribute["#text"] === update.id_product_attribute
+                        )
+                    );
+                    
+                    const obj = await saveStockMouvement({
+                        id_product: update.id_product,
+                        id_product_attribute: update.id_product_attribute,
+                        id_employee: 1,
+                        id_warehouse: 1,
+                        id_order: savedOrder.id,
+                        id_stock: stockItem ? stockItem.id : 0,
+                        price_te: 1,
+                        id_stock_mvt_reason : 12 ,
+                        sign : -1,
+                        
+                        physical_quantity : update.quantity<0 ? update.quantity* -1 : update.quantity,
+                        date_add: order.date_add
+                    })
+                    await patchStockMouvement({
+                        id: obj.id,
+                        date_add: order.date_add,
+                    });
+
+                }
+            }
+            
         } catch (e) {
             console.log(e);
+            throw e;
+        } finally {
+            index++;
         }
     }
     return savedOrders;

@@ -23,6 +23,27 @@ async function getAllCarts() {
         throw e;
     }
 }
+async function getAllCartsByCustomerId(customerId) {
+    try{
+        const result = await ApiAction(
+            apiUrl ,
+            "GET" ,
+            {
+                "display":"full",
+                "filter[id_customer]": customerId
+            }
+        )
+        const json = xmlToJson.parse(result);
+        const carts = json.prestashop.carts.cart;
+        // console.log(carts);
+
+        return Array.isArray(carts) ? carts : carts ? [carts] : [];
+    } catch (e) {
+        console.log(e)
+        throw e;
+    }
+}
+
 
 async function deleteCart(id) {
     id = parseInt(id);
@@ -32,7 +53,7 @@ async function deleteCart(id) {
             "DELETE"
         );
         const json = xmlToJson.parse(result);
-        return json.prestashop.cart;
+        return json.prestashop;
     } catch (e) {
         console.log(e);
         throw e;
@@ -47,9 +68,9 @@ async function getAllIdCarts() {
             {"display":"[id]"}
         );
         const json = xmlToJson.parse(result);
-        const carts = json.prestashop;
+        const carts = json.prestashop.carts;
         console.log(carts);
-
+        
         return carts;
     } catch (e) {
         console.log(e)
@@ -89,8 +110,8 @@ async function saveCart(cart){
                 }
             }
         );
-        console.log("XML to send : \n");
-        console.log(cartXml);
+        // console.log("XML to send : \n");
+        // console.log(cartXml);
         const result = await ApiAction(
             apiUrl ,
             "POST" ,
@@ -173,6 +194,7 @@ async function updateCart(id,cart){
 
 export {
     getAllCarts , 
+    getAllCartsByCustomerId,
     deleteCart, 
     getAllIdCarts, 
     deleteAllCarts,
