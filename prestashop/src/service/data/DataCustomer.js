@@ -1,5 +1,12 @@
 import {saveCustomer } from "../customer/CustomerApi";
 
+const colDate = "date";
+const colNom = "nom";
+const colEmail = "email";
+const colPwd = "pwd";
+const colAdresse = "adresse";
+const colAchat = "achat";
+const colEtat = "etat";
 async function getCustomers(file) {
     const customers = await createCustomers(file);
     const customersWithId = await saveCustomers(customers);
@@ -9,10 +16,10 @@ async function createCustomers(file) {
     const customers = file.map(
         item => {
             return {
-                lastname: item["nom"],
-                firstname: item["nom"],
-                email: item["email"],
-                passwd: item["pwd"]
+                lastname: item[colNom],
+                firstname: item[colNom],
+                email: item[colEmail],
+                passwd: item[colPwd]
             }
         }
     );

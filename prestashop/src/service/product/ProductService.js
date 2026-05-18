@@ -59,6 +59,8 @@ async function chargeProducts(taxes , categories , optionValues , options , comb
                 id : product.id,
                 category : category ,
                 tax : tax,
+                id_default_image : product.id_default_image ? product.id_default_image["#text"] : null,
+                image_url : buildProductImageUrl(product.id, product.id_default_image ? product.id_default_image["#text"] : null),
                 reference : product.reference, 
                 name : product.name.language["#text"],
                 price : parseFloat(product.price) ,
@@ -72,6 +74,11 @@ async function chargeProducts(taxes , categories , optionValues , options , comb
     } catch (error) {
         throw error;
     }
+}
+
+function buildProductImageUrl(productId, imageId) {
+    if (!productId || !imageId) return null;
+    return `http://localhost/prestashop1/api/images/products/${productId}/${imageId}`;
 }
 async function chargeCategory(){
     try {

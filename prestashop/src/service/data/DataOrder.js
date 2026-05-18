@@ -8,6 +8,15 @@ const currencyId = 1;
 const langId = 1; 
 const module = "ps_cashondelivery";
 
+
+const colDate = "date";
+const colNom = "nom";
+const colEmail = "email";
+const colPwd = "pwd";
+const colAdresse = "adresse";
+const colAchat = "achat";
+const colEtat = "etat";
+
 async function getOrders(file , products , carts , customers , addresses , combinations , stock) {
     const mvtStock = [];
     const orderStates = await getOrderStates();
@@ -24,20 +33,20 @@ async function createOrder(file , products , carts , customers , addresses , com
     for(const item of file) {
         // console.log("item" , item);
 
-        if(!item["etat"]) continue ;
-        const customerFound = customers.find(c => c.email === item["email"]);
+        if(!item[colEtat]) continue ;
+        const customerFound = customers.find(c => c.email === item[colEmail]);
         // console.log("customerFound" , customerFound);
         if(!customerFound) continue ;
 
-        const cartFound = carts.find(c => c.name === item["achat"] && c.id_customer === customerFound.id);
+        const cartFound = carts.find(c => c.name === item[colAchat] && c.id_customer === customerFound.id);
         // console.log("cartFound" , cartFound);
         if(!cartFound) continue ;
     
-        const orderStateFound = orderStates.find(os => os.name.trim() === item["etat"].toLowerCase().trim());
+        const orderStateFound = orderStates.find(os => os.name.trim() === item[colEtat].toLowerCase().trim());
         // console.log("orderStateFound" , orderStateFound);
         if(!orderStateFound) continue ;
 
-        const addressFound = addresses.find(a => a.address1 === item["adresse"]);
+        const addressFound = addresses.find(a => a.address1 === item[colAdresse]);
         // console.log("addressFound" , addressFound);
         if(!addressFound) continue ;
 

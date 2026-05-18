@@ -6,14 +6,20 @@ export default function UploadFile() {
     const [files, setFiles] = useState({
         fichier1: null,
         fichier2: null,
-        fichier3: null
+        fichier3: null,
+        fichier4: null,
+        headerfichier1: null,
+        headerfichier2: null,
+        headerfichier3: null,
     });
     const [disabled, setDisabled] = useState(true);
+
+    const [loading, setLoading] = useState(false);
 
     const allFile = () => {
         return files.fichier1 && files.fichier2 && files.fichier3;
     }
-   
+    const headersKey = (id) => `header${id}`;
     const handleFileChange = (e , id) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -22,22 +28,44 @@ export default function UploadFile() {
         Papa.parse(file, {
 
             header: true,
-
+            transformHeader: (header) => {
+                    return header.trim().toLowerCase();
+            },
             skipEmptyLines: true,
 
             complete: (results) => {
                 setFiles(prevFiles => ({
                     ...prevFiles,
-                    [id]: results.data
+                    [id]: results.data,
+                    [headersKey(id)]: results.meta.fields, // Store headers separately
                 }));
             }
         });
     }
+    const handleFileChange4 = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setFiles(prevFiles => ({
+            ...prevFiles,
+            fichier4: file,
+        }));
+        // Handle the fourth file if needed
+
+    }
 
     const handleSubmit = async (e) => {
-        console.log("in components :",files);
-        const res = await UploadFileApi(files);
-        console.log(res);
+        try {
+            setLoading(true);
+            const res = await UploadFileApi(files);
+            alert("Files uploaded successfully!");
+        } catch (error) {
+            alert("An error occurred while uploading files: " + error.message);
+        } finally {
+            setLoading(false);
+        }
+        // console.log("in components :",files);
+        // console.log(res);
     }
     
     useEffect(() => {0
@@ -101,6 +129,25 @@ export default function UploadFile() {
                             file:bg-blue-50 file:text-blue-700 
                             hover:file:bg-blue-100 cursor-pointer"
                     onChange={(e) => handleFileChange(e, "fichier3")}
+                />
+                </div>
+
+                {/* Champ fichier 4 */}
+                <div>
+                <label htmlFor="fichier4" className="block text-sm font-medium text-gray-700 mb-1">
+                    Choose a file for file 4:
+                </label>
+                <input
+                    type="file"
+                    id="fichier4"
+                    name="fichier4"
+                    className="block w-full text-sm text-gray-500 
+                            file:mr-4 file:py-2 file:px-4 
+                            file:rounded-lg file:border-0 
+                            file:text-sm file:font-semibold 
+                            file:bg-blue-50 file:text-blue-700 
+                            hover:file:bg-blue-100 cursor-pointer"
+                    onChange={handleFileChange4}
                 />
                 </div>
 

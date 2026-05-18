@@ -1,6 +1,14 @@
 import { saveProduct } from "../product/ProductApi";
 // Product -- fonction principale
 
+const colCategorie = 'categorie';
+const colTaxe = 'taxe';
+const ColDate = 'date_availability_produit';
+const colNom = 'nom';
+const colRef = 'reference';
+const colPrixTTC = 'prix_ttc';
+const colPrixAchat = 'prix_achat';
+
 async function getProducts(file1  , categories , taxes){
     const products = await createProducts(file1, categories , taxes);
     const productsWithId = await saveProducts(products);
@@ -11,11 +19,11 @@ async function getProducts(file1  , categories , taxes){
 async function createProducts(file1, categories , taxes) {
     // console.log("taxe in createProducts:", taxes);
     const produits = file1.map(item => {
-        const category = categories.find(c => c.name === item['categorie']);
-        const tax = taxes.find(t => t.name === item['Taxe']);
-        const dateSplite = item['date_availability_produit'].split('/');
+        const category = categories.find(c => c.name === item[colCategorie]);
+        const tax = taxes.find(t => t.name === item[colTaxe]);
+        const dateSplite = item[ColDate].split('/');
         const date = (`${dateSplite[2]}-${dateSplite[1]}-${dateSplite[0]} 00:00:00`);
-        const price = parseFloat(item['prix_ttc'].replace(',', '.')) / (1 + (tax.rate / 100));
+        const price = parseFloat(item[colPrixTTC].replace(',', '.')) / (1 + (tax.rate / 100));
 
 
         return { 
@@ -23,13 +31,13 @@ async function createProducts(file1, categories , taxes) {
                 language : 
                 { 
                     "@_id": 1,
-                    "#text": item['nom']
+                    "#text": item[colNom]
                 }
             },
             tax : tax,
-            reference: item['reference'],
+            reference: item[colRef],
             available_date : date,
-            wholesale_price : parseFloat(item['prix_achat'].replace(',', '.')),
+            wholesale_price : parseFloat(item[colPrixAchat].replace(',', '.')),
             price : price.toFixed(5), 
             id_tax_rules_group : tax.id_tax_rules_group ,
             state: 1,   

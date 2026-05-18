@@ -2,7 +2,11 @@ import { saveProductOption } from "../product/ProductOptionApi.js";
 import { saveProductOptionValue } from "../product/ProductOptionValueApi.js";
 import { saveCombination } from "../combination/CombinationApi.js";
 
-
+const colRef = "reference";
+const colSpec = "specificité";
+const colKara = "karazany";
+const colStock = "stock_initial";
+const colPrice = "prix_vente_ttc";
 // -- Options
 async function getOptions(file){
     const options = await createOptions(file);
@@ -13,12 +17,12 @@ async function getOptions(file){
 async function createOptions(file){
     const colonne = "specificité";
     const options = file.map(item => {
-        if(!item[colonne]){
+        if(!item[colSpec]){
             return ;
         }
         return {
-            public_name: item[colonne],
-            name: (item[colonne])
+            public_name: item[colSpec],
+            name: (item[colSpec])
         } ;
     });
     const uniqueOptions = [];
@@ -60,7 +64,7 @@ async function saveOptions(options) {
             savedOptions.push({
                 ...option,
                 name: option.name.language[0]["#text"],
-                pulbic_name: option.public_name.language[0]["#text"],
+                public_name: option.public_name.language[0]["#text"],
                 id: savedOption.id
             });
         } catch (e) {
@@ -79,16 +83,16 @@ async function getOptionValues(file, options){
 async function createOptionValues(file,options){
     const colonne = "karazany";
     const optionValues = file.map(item => {
-        if(!item[colonne]){
+        if(!item[colKara]){
             return ;
         }
-        if(!item["specificité"]){
+        if(!item[colSpec]){
             return ;
         }
         return {
-            reference: item["reference"],
-            specificité : item["specificité"],
-            karazany : item[colonne]
+            reference: item[colRef],
+            specificité : item[colSpec],
+            karazany : item[colKara]
         }
     }); 
     const uniqueOptionValues = [];
@@ -160,11 +164,11 @@ async function getCombinations(file , products ,options, optionValues ){
 
 async function createCombinations(file , products ,options, optionValues){
     const combinations = file.map(item => {
-        const productFound = products.find(p => p.reference === item["reference"]);
-        const optionFound = options.find(o => o.name === item["specificité"]);
-        const optionValueFound = optionValues.find(ov => ov.name === item["karazany"] && ov.id_attribute_group == optionFound.id);
+        const productFound = products.find(p => p.reference === item[colRef]);
+        const optionFound = options.find(o => o.name === item[colSpec]);
+        const optionValueFound = optionValues.find(ov => ov.name === item[colKara] && ov.id_attribute_group == optionFound.id);
         if(productFound && optionFound && optionValueFound){
-            const price = parseFloat(item['prix_vente_ttc'].replace(',', '.')) / (1 + (productFound.tax.rate / 100));
+            const price = parseFloat(item[colPrice].replace(',', '.')) / (1 + (productFound.tax.rate / 100));
             return {
                 id_product : productFound.id,
                 id_option : optionFound.id,

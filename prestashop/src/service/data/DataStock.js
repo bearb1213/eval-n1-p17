@@ -5,38 +5,16 @@ import {
 
 } from "../stock/StockAvailableApi.js";
 import { saveStockMouvement , patchStockMouvement } from "../stock/StockMouvementApi.js";
-
+const colRef = "reference";
+const colSpec = "specificité";
+const colKara = "karazany";
+const colStock = "stock_initial";
+const colPrice = "prix_vente_ttc";
 
 async function getStock(file, products , option_values , combinations){
     const stock = await getAllStock(file, products , option_values , combinations);
     const stockWithId = await saveStock(stock);
     return stockWithId;
-}
-async function getStockWare(stockAvailable) {
-    try {
-        const retour = [];
-        for (const stock of stockAvailable) {
-            const id_product = stock.id_product["#text"] ;
-            const id_product_attribute = stock.id_product_attribute !== 0 || stock.id_product_attribute !== "0"
-                                            ? stock.id_product_attribute["#text"] || stock.id_product_attribute : 0;
-            const stockToSend = {
-                id_warehouse : 1,
-                price_te : 1,
-                physical_quantity : stock.quantity,
-                id_product : id_product,
-                id_product_attribute : id_product_attribute,
-                usable_quantity : stock.quantity,
-            }
-            const result = await saveStock(stockToSend);
-            stockToSend.id = result.id;
-            retour.push(stockToSend);
-        
-        }
-        return retour;
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
 }
 
 async function getAllStock(file, products , option_values , combinations){
@@ -44,13 +22,13 @@ async function getAllStock(file, products , option_values , combinations){
     
     const stockAvailableMap = await getAllStockAvailable();
     const stockAvailable = file.map(item=> {
-        const productFound = products.find(p => p.reference === item["reference"]);
+        const productFound = products.find(p => p.reference === item[colRef]);
         const id_product = productFound ? productFound.id : null;
         if (!id_product) {
-            console.log(`Product not found for reference: ${item["reference"]}`);
+            console.log(`Product not found for reference: ${item[colRef]}`);
             return null;
         }
-        const optionValueFound = option_values.find(ov => ov.name === item["karazany"] );
+        const optionValueFound = option_values.find(ov => ov.name === item[colKara] );
         let id_attribute = 0;
         if (optionValueFound) {   
             const combinationFound = combinations.find(c => 
@@ -59,7 +37,7 @@ async function getAllStock(file, products , option_values , combinations){
             );
             id_attribute = combinationFound ? combinationFound.id : 0;
         }
-        const quantity = parseInt(item['stock_initial']);
+        const quantity = parseInt(item[colStock]);
 
         // console.log(" id_product: ", id_product, "id_attribute: ", id_attribute, "quantity: ", quantity);
         // const stock = await getStockAvailableByIdProductAndIdAttribute(id_product, id_attribute);
@@ -128,5 +106,4 @@ async function saveStock(stockAvailable) {
 
 export {
     getStock ,
-    getStockWare ,
 };

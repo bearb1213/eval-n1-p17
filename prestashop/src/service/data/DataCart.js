@@ -3,6 +3,15 @@ import {saveCart , patchCart} from "../cart/CartApi"
 const currencyId = 1;
 const langId = 1; 
 
+
+const colDate = "date";
+const colNom = "nom";
+const colEmail = "email";
+const colPwd = "pwd";
+const colAdresse = "adresse";
+const colAchat = "achat";
+const colEtat = "etat";
+
 async function getCarts(file, products , optionValues ,combinations , customers ) {
     const carts = await cartComposition(file , products , optionValues , combinations , customers);
     const cartsWithId = await saveCarts(carts);
@@ -13,7 +22,7 @@ async function cartComposition(file , products, optionValues ,combinations , cus
     try {
         for(const line of file) {
 
-            const name = line["achat"];
+            const name = line[colAchat];
 
             const cartLines = [...name.matchAll(/\((.*?)\)/g)].map(match => match[1]);
             
@@ -44,7 +53,7 @@ async function cartComposition(file , products, optionValues ,combinations , cus
                 }
             });
             
-            const date = line["date"].split("/");
+            const date = line[colDate].split("/");
             const dateFormated = `${date[2]}-${date[1]}-${date[0]} 00:00:00`;
 
             const cart = [];
@@ -55,7 +64,7 @@ async function cartComposition(file , products, optionValues ,combinations , cus
             }
 
 
-            const customerFound = customers.find(c => c.email === line['email'])
+            const customerFound = customers.find(c => c.email === line[colEmail])
             if(customerFound){
 
                 carts.push({

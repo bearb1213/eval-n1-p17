@@ -1,6 +1,6 @@
 import {getEnv} from "./EnvVariable.js";
 
-export async function ApiAction (
+async function ApiAction (
     url ,
     action ,
     params = {} ,
@@ -41,4 +41,20 @@ export async function ApiAction (
     }
 
     return await response.text();
+}
+async function buildPrestashopHeaders(){
+    try {
+        const ws_key = getEnv("VITE_WS_KEY", '');
+        return  {
+            "Authorization": `Basic ${btoa(ws_key + ":")}`,
+        }
+    } catch (e) {
+        console.error("Error building headers:", e);
+        return {};
+    }
+}
+
+export {
+    ApiAction,
+    buildPrestashopHeaders
 }

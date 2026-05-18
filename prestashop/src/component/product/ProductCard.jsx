@@ -10,6 +10,20 @@ export default function ProductCard({ product }) {
 
   return (
     <article className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+      <div className="h-44 w-full overflow-hidden rounded-t-xl bg-gray-100">
+        {product.image_url ? (
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-xs text-gray-400">
+            Image indisponible
+          </div>
+        )}
+      </div>
       <div className="p-5 flex-1">
         <div className="flex items-center justify-between mb-3">
           <div className="flex flex-wrap items-center gap-2">

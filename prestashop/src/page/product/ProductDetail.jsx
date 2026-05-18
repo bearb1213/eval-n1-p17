@@ -155,7 +155,21 @@ export default function ProductDetail() {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-        <div className="flex items-start justify-between gap-4">
+        <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
+          <div className="h-56 w-full overflow-hidden rounded-xl bg-gray-100">
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-xs text-gray-400">
+                Image indisponible
+              </div>
+            )}
+          </div>
+          <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
@@ -186,6 +200,7 @@ export default function ProductDetail() {
             <p className="text-lg font-semibold text-gray-700">
               {formatPrice(product.wholesale_price)}
             </p>
+          </div>
           </div>
         </div>
         <div className="mt-6 flex gap-4">

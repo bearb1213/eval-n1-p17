@@ -45,11 +45,12 @@ import {
     getOptions ,
     getOptionValues, 
 } from "./DataCombination";
-import { getStock, getStockWare } from "./DataStock";
+import { getStock, } from "./DataStock";
 import { getCustomers } from "./DataCustomer";
 import { getAddresses } from "./DataAddress.js";
 import { getCarts } from "./DataCart.js";
 import { getOrders } from "./DataOrder.js";
+import { createImageFromZip } from "./DataImage.js";
 
 async function deleteAllData(setFonctionCalled) {
     const fonctionCalled = [];
@@ -109,62 +110,152 @@ async function deleteAllData(setFonctionCalled) {
 
 
 
-async function UploadFile(file) {
-    const file1 = file.fichier1;
-    const file2 = file.fichier2;
-    const file3 = file.fichier3;
-    // console.log("File 1:", file1);
-    // console.log("File 2:", file2);
-    // console.log("File 3:", file3);
-// FILE 1 : categories and taxes and products
-    // categories 
-    const categorie = await getCategories(file1);
-    console.log("categories with id :", categorie);
-    // taxes
-    const taxes = await getTaxes(file1);
-    console.log("taxes with id :", taxes);
-    // products 
-    const products = await getProducts(file1 , categorie , taxes);
-    console.log("products with id :", products);
+async function UploadFile(file) { 
+    try {
+        
+        const file1 = file.fichier1;
+        const file2 = file.fichier2;
+        const file3 = file.fichier3;
+        const file4 = file.fichier4;
 
-// FILE 2 : combinations
-    // options 
-    const options = await getOptions(file2);
-    console.log("Options with ID:", options);
-    // options values
-    const optionValues = await getOptionValues(file2, options);
-    console.log("Option Values with ID:", optionValues);
-    // combinations
-    const combinations = await getCombinations(file2 , products ,options, optionValues );
-    console.log("Combinations with ID:", combinations);
-    // stock
-    const stock = await getStock(file2, products , optionValues , combinations);
-    console.log("Stock with ID:", stock);
+        const header1 = file.headerfichier1;
+        const header2 = file.headerfichier2;
+        const header3 = file.headerfichier3;
 
-    // const stockWare = await getStockWare(stock);
-    // console.log("Stock Ware with ID:", stockWare);
+        await test(file1, file2, file3 , file4, header1, header2, header3);
+        // console.log("File 1:", file1);
+        // console.log("File 2:", file2);
+        // console.log("File 3:", file3);
+    // FILE 1 : categories and taxes and products
+        // categories check
+        const categorie = await getCategories(file1);
+        console.log("categories with id :", categorie);
+        // taxes
+        const taxes = await getTaxes(file1);
+        console.log("taxes with id :", taxes);
+        // products 
+        const products = await getProducts(file1 , categorie , taxes);
+        console.log("products with id :", products);
 
-// FILE 3 : orders 
-    // customers
-    const customers = await getCustomers(file3);
-    console.log("Customers with ID:", customers);
-    // addresses
-    const addresses = await getAddresses(file3);
-    console.log("Addresses with ID:", addresses);
-    // cart 
-    const cart = await getCarts(
-                                file3,products,optionValues
-                                ,combinations,customers
-                            );
-    console.log("carts with ID:",cart);
-    // orders
-    const orders = await getOrders(file3 , products , cart , customers , addresses , combinations , stock);
-    console.log("orders with ID:", orders);
+    // FILE 4 : images
+        await createImageFromZip(file.fichier4, products, console.log, console.log);
+        
+    // FILE 2 : combinations
+        // options 
+        const options = await getOptions(file2);
+        console.log("Options with ID:", options);
+        // options values
+        const optionValues = await getOptionValues(file2, options);
+        console.log("Option Values with ID:", optionValues);
+        // combinations
+        const combinations = await getCombinations(file2 , products ,options, optionValues );
+        console.log("Combinations with ID:", combinations);
+        // stock
+        const stock = await getStock(file2, products , optionValues , combinations);
+        console.log("Stock with ID:", stock);
+
+    
+
+    // FILE 3 : orders 
+        // customers
+        const customers = await getCustomers(file3);
+        console.log("Customers with ID:", customers);
+        // addresses
+        const addresses = await getAddresses(file3);
+        console.log("Addresses with ID:", addresses);
+        // cart 
+        const cart = await getCarts(
+                                    file3,products,optionValues
+                                    ,combinations,customers
+                                );
+        console.log("carts with ID:",cart);
+        // orders
+        const orders = await getOrders(file3 , products , cart , customers , addresses , combinations , stock);
+        console.log("orders with ID:", orders);
+    return true;
+    } catch (error) {
+        console.log(error);
+        throw error;
+        return false;
+    }   
     
 }
 
 
+async function test(file1, file2, file3 , file4 ,header1, header2, header3) {
+    if(!file1 ) throw new Error("File 1 is required");
+    if(!file2 ) throw new Error("File 2 is required");
+    if(!file3 ) throw new Error("File 3 is required");
+    if(!file4 ) throw new Error("File 4 is required");
+    if(!header1 ) throw new Error("Header 1 is required");
+    if(!header2 ) throw new Error("Header 2 is required");
+    if(!header3 ) throw new Error("Header 3 is required");
+    const header1Expected = ["date_availability_produit", "nom", "reference", "prix_ttc", "taxe", "categorie" , "prix_achat"];
+    const header2Expected = ["reference", "specificité", "karazany", "stock_initial", "prix_vente_ttc"];
+    const header3Expected = ["date", "nom", "email", "pwd", "adresse" , "achat" , "etat"];
+    
+    for(const header of header1) {
+        if(!header1Expected.includes(header.trim().toLowerCase())) {
+            throw new Error(`Header in file 1 is not valid. Given: ${header}, Expected headers: ${header1Expected.join(", ")}`);
+        }
+    }
+    for(const header of header2) {
+        if(!header2Expected.includes(header.trim().toLowerCase())) {
+            throw new Error(`Header in file 2 is not valid. Given: ${header}, Expected headers: ${header2Expected.join(", ")}`);
+        }
+    }
+    for(const header of header3) {
+        if(!header3Expected.includes(header.trim().toLowerCase())) {
+            throw new Error(`Header in file 3 is not valid. Given: ${header}, Expected headers: ${header3Expected.join(", ")}`);
+        }
+    } 
+    for(const item of file1) {
+        if(!(isValidDate(item.date_availability_produit) )){
+            throw new Error(`Invalid date format for product ${item.nom}. Expected format: DD/MM/YYYY. Given: ${item.date_availability_produit}`);
+        }
+        if(Number((item.prix_ttc.replace(/,/g, '.'))) < 0) {
+            throw new Error(`Invalid price for product ${item.nom}. Price cannot be negative. Given: ${item.prix_ttc}`);
+        }
+        if(Number((item.prix_achat.replace(/,/g, '.'))) < 0) {
+            throw new Error(`Invalid purchase price for product ${item.nom}. Price cannot be negative. Given: ${item.prix_achat}`);
+        }
+        // if(Number(item.taxe) < 0) {
+        //     throw new Error(`Invalid tax for product ${item.nom}. Tax cannot be negative. Given: ${item.taxe}`);
+        // }
+    }
+    for(const item of file2) {
+        // if(Number(item.stock_initial) < 0) {
+        //     throw new Error(`Invalid stock quantity for combination ${item.reference} - ${item.specificité}. Stock cannot be negative. Given: ${item.stock_initial}`);
+        // }
+        if(Number((item.prix_vente_ttc.replace(/,/g, '.'))) < 0) {
+            throw new Error(`Invalid sale price for combination ${item.reference} - ${item.specificité}. Price cannot be negative. Given: ${item.prix_vente_ttc}`);
+        }
+    }
+    for(const item of file3) {
+        if(!(isValidDate(item.date) )){
+            throw new Error(`Invalid date format for order of customer ${item.nom}. Expected format: DD/MM/YYYY. Given: ${item.date}`);
+        }
+    }
+}
 
+function isValidDate(dateString) {
+  const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+  
+  if (!dateString.match(regex)) {
+    return false; 
+  }
+
+  const parts = dateString.split("/");
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1; 
+  const year = parseInt(parts[2], 10);
+
+  const date = new Date(year, month, day);
+
+  return date.getFullYear() === year && 
+         date.getMonth() === month && 
+         date.getDate() === day;
+}
 
 
 

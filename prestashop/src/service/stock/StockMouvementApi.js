@@ -33,7 +33,7 @@ async function saveStockMouvement(stockMouvement) {
                 stock_mvt: stockMouvement,
             }
         });
-        console.log("Stock Movement XML:", stockMouvementXml);
+        // console.log("Stock Movement XML:", stockMouvementXml);
         const result = await ApiAction(
             apiUrl ,
             "POST" ,

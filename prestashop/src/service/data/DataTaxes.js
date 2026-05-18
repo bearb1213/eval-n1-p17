@@ -3,7 +3,7 @@ import {saveTaxRuleGroup } from "../tax/TaxRuleGroupApi";
 import {saveTaxRule} from "../tax/TaxRuleApi";
 
 const id_country = 8;
-const colonne = 'Taxe';
+const colonne = 'taxe';
 // -- Taxes , fonction principale
 async function getTaxes(file){
     const taxes = await getTaxesInit(file);
