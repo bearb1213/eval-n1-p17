@@ -5,7 +5,9 @@ export default function ProfitByCategory() {
     const [summary, setSummary] = useState({
         totalSalesHT: 0,
         totalPurchaseHT: 0,
+        totalAchatHt: 0,
         profitByCategory: [],
+        achatByCategoryId: new Map(),
     });
     const [stockByCategory, setStockByCategory] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -26,7 +28,9 @@ export default function ProfitByCategory() {
                 setSummary({
                     totalSalesHT: profitData.totalSalesHT || 0,
                     totalPurchaseHT: profitData.totalPurchaseHT || 0,
+                    totalAchatHt: profitData.totalAchatHt || 0,
                     profitByCategory: profitData.profitByCategory || [],
+                    achatByCategoryId: profitData.achatByCategoryId || new Map(),
                 });
                 setStockByCategory(stockData || []);
             } catch (e) {
@@ -47,6 +51,10 @@ export default function ProfitByCategory() {
     const totalProfit = useMemo(
         () => summary.totalSalesHT - summary.totalPurchaseHT,
         [summary.totalSalesHT, summary.totalPurchaseHT]
+    );
+    const totalRealProfit = useMemo(
+        () => summary.totalSalesHT - summary.totalAchatHt,
+        [summary.totalSalesHT, summary.totalAchatHt]
     );
 
     if (loading) {
@@ -74,7 +82,7 @@ export default function ProfitByCategory() {
                 <p className="mt-1 text-sm text-gray-500">
                     Synthese des ventes, achats et benefices (HT).
                 </p>
-                <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <div className="mt-6 grid gap-4 sm:grid-cols-5">
                     <StatCard
                         label="Total ventes HT"
                         value={formatAmount(summary.totalSalesHT)}
@@ -84,8 +92,16 @@ export default function ProfitByCategory() {
                         value={formatAmount(summary.totalPurchaseHT)}
                     />
                     <StatCard
+                        label="Total achat stock HT"
+                        value={formatAmount(summary.totalAchatHt)}
+                    />
+                    <StatCard
                         label="Benefice HT"
                         value={formatAmount(totalProfit)}
+                    />
+                    <StatCard
+                        label="Benefice reel HT"
+                        value={formatAmount(totalRealProfit)}
                     />
                 </div>
             </section>
@@ -104,7 +120,9 @@ export default function ProfitByCategory() {
                                 <th className="px-3 py-2">Categorie</th>
                                 <th className="px-3 py-2">Ventes HT</th>
                                 <th className="px-3 py-2">Achats HT</th>
+                                <th className="px-3 py-2">Achat stock HT</th>
                                 <th className="px-3 py-2">Benefice HT</th>
+                                <th className="px-3 py-2">Benefice reel HT</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y">
@@ -120,7 +138,22 @@ export default function ProfitByCategory() {
                                         {formatAmount(category.totalPurchaseHT)}
                                     </td>
                                     <td className="px-3 py-2">
+                                        {formatAmount(
+                                            summary.achatByCategoryId.get(
+                                                category.categoryId
+                                            )?.purchaseHT
+                                        )}
+                                    </td>
+                                    <td className="px-3 py-2">
                                         {formatAmount(category.profitHT)}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {formatAmount(
+                                            category.totalSalesHT -
+                                                (summary.achatByCategoryId.get(
+                                                    category.categoryId
+                                                )?.purchaseHT || 0)
+                                        )}
                                     </td>
                                 </tr>
                             ))}

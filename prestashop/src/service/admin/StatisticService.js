@@ -1,21 +1,51 @@
 import { getProducts } from "../product/ProductService";
 import { getOrderLiverPayer } from "../order/OrderService";
-import { getAllStockMouvement } from "../stock/StockMouvementApi";
+import { getAllStockMouvement , getStockMouvementPositif } from "../stock/StockMouvementApi";
 
 async function getProfitByCategory() {
 	try {
-		const [orders, products] = await Promise.all([
+		const [orders, products,stockMv] = await Promise.all([
 			getOrderLiverPayer(),
 			getProducts(),
+			getStockMouvementPositif()
 		]);
 
 		const productById = new Map();
-
+		let totalAchatHt = 0;
+		const achatByCategoryId = new Map();
+		// console.log("stockMv : ", stockMv);
 		normalizeArray(products).forEach(product => {
 			if (!product) return;
 			const productId = normalizeId(product.id);
 			if (productId) {
 				productById.set(productId, product);
+				let totalProductPurchaseHT = 0;
+				normalizeArray(product.stock).forEach(stock => {
+					// console.log("stock in  getProfitByCategory : ", stock);
+					normalizeArray(stockMv).forEach(stockMv => {
+						if (normalizeId(stockMv.id_stock) === normalizeId(stock.id)) {
+
+							const quantity = toNumber(stockMv.physical_quantity);
+							const unitCost = toNumber(product.wholesale_price ?? 0);
+							const lineTotal = unitCost * quantity;
+							if (lineTotal === 0) return;
+							totalProductPurchaseHT += lineTotal;
+							console.log("quantity : ", quantity, " unitCost : ", unitCost , " lineTotal : ", lineTotal , " totalProductPurchaseHT : ", totalProductPurchaseHT);
+						}
+					});
+				});
+				const categoryId = normalizeId(product.category?.id) || "unknown";
+				const entry = achatByCategoryId.get(categoryId) || {
+					categoryId,
+					categoryName: product.category?.name || "Unknown",
+					purchaseHT: 0,
+				};
+				entry.purchaseHT += totalProductPurchaseHT;
+				console.log("totalProductPurchaseHT : ", totalProductPurchaseHT);
+				console.log("entry purchaseHT : ", entry);
+				achatByCategoryId.set(categoryId, entry);
+				totalAchatHt += totalProductPurchaseHT;
+				console.log("totalAchatHt : ", totalAchatHt);
 			}
 		});
 
@@ -37,6 +67,7 @@ async function getProfitByCategory() {
 				);
 				const lineTotal = unitPrice * quantity;
 				if (lineTotal === 0) return;
+
 
 				const entry = salesByCategoryId.get(categoryId) || {
 					categoryId,
@@ -106,7 +137,9 @@ async function getProfitByCategory() {
 		return {
 			totalSalesHT,
 			totalPurchaseHT,
+			totalAchatHt,
 			profitByCategory,
+			achatByCategoryId
 		};
 	} catch (error) {
 		console.log(error);
