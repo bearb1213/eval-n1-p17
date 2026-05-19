@@ -7,6 +7,7 @@ import { getOrders } from '../service/order/OrderService';
 import OrderTable from './order/OrderTable';
 import EmptyState from './order/EmptyState';
 import { createOrder } from '../service/cart/CartService';
+import {handleCart} from '../service/cart/CartService'
 
 export default function ShopLayout() {
     const [cartOpen, setCartOpen] = useState(false);
@@ -99,14 +100,25 @@ export default function ShopLayout() {
         setCartOpen((prev) => !prev);
     };
 
-    const handleRemoveCartItem = (itemToRemove) => {
-        const updated = cartItems.filter((item) => {
-            const productMatch = String(item.productId || item.id) === String(itemToRemove.productId || itemToRemove.id);
-            const comboMatch = String(item.comboId || "base") === String(itemToRemove.comboId || "base");
-            return !(productMatch && comboMatch);
-        });
-        localStorage.setItem("cart", JSON.stringify(updated));
-        setCartItems(updated);
+    const handleRemoveCartItem = async (itemToRemove) => {
+        try {
+            console.log("midira");
+            const updated = cartItems.filter((item) => {
+                const productMatch = String(item.productId || item.id) === String(itemToRemove.productId || itemToRemove.id);
+                const comboMatch = String(item.comboId || "base") === String(itemToRemove.comboId || "base");
+                return !(productMatch && comboMatch);
+            });
+            localStorage.setItem("cart", JSON.stringify(updated));
+            const idCustomer = JSON.parse(localStorage.getItem("customer"))?.id || null;
+            const idGuest = localStorage.getItem("guestId") || null;
+            const cartId = localStorage.getItem("cartId");
+            
+            const result = await handleCart(idCustomer, idGuest, cartId, updated);
+            console.log("Cart updated/saved: ", result);    
+            setCartItems(updated);
+        } catch (error) {
+            alert("erro : "+error.message);
+        }
     };
 
     const handleToggleLogin = () => {

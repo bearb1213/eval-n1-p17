@@ -1,4 +1,13 @@
-export default function CartDrawer({ open, items, onClose, onRemoveItem, onCreateOrder, canCreateOrder, isCreatingOrder }) {
+export default function CartDrawer({ 
+            open, 
+            items, 
+            onClose, 
+            onRemoveItem, 
+            onCreateOrder, 
+            canCreateOrder, 
+            isCreatingOrder 
+    }) {
+
     const handleVidePanier = () => {
         localStorage.removeItem("cart");
         localStorage.removeItem("cartId");

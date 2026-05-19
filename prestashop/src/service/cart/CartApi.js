@@ -43,7 +43,21 @@ async function getAllCartsByCustomerId(customerId) {
         throw e;
     }
 }
-
+async function getCartById(id) {
+    try {
+        const result = await ApiAction(
+            apiUrl+"/"+id ,
+            "GET" ,
+        );
+        const json = xmlToJson.parse(result);
+        const cart = json.prestashop.cart;
+        // console.log(cart);
+        return cart;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
 
 async function deleteCart(id) {
     id = parseInt(id);
@@ -195,6 +209,7 @@ async function updateCart(id,cart){
 export {
     getAllCarts , 
     getAllCartsByCustomerId,
+    getCartById,
     deleteCart, 
     getAllIdCarts, 
     deleteAllCarts,

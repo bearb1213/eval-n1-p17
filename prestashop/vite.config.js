@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from "@tailwindcss/vite";
-
+import {getEnv} from "./src/service/util/EnvVariable"
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -12,35 +12,34 @@ export default defineConfig(({ mode }) => {
     ],
     server :{
       proxy : {
-          '/api/images': {
-              target: 'http://localhost/prestashop',
-              changeOrigin: true,
-              configure: (proxy, options) => {
-              proxy.on('proxyReq', (proxyReq, req, res) => {
-                // Ajouter ws_key à toutes les requêtes d'images
-                const apiKey = process.env.VITE_API_KEY;
-                let path = proxyReq.path;
-                const separator = path.includes('?') ? '&' : '?';
-                proxyReq.path = `${path}${separator}ws_key=${apiKey}`;
-                console.log(`Image proxy: ${req.url} -> ${proxyReq.path}`);
-              });
-            }
-          },
+          // '/api/images': {
+          //     target: 'http://localhost/prestashop',
+          //     changeOrigin: true,
+          //     configure: (proxy, options) => {
+          //     proxy.on('proxyReq', (proxyReq, req, res) => {
+          //       // Ajouter ws_key à toutes les requêtes d'images
+          //       const apiKey = env.VITE_WS_KEY;
+          //       let path = proxyReq.path;
+          //       const separator = path.includes('?') ? '&' : '?';
+          //       proxyReq.path = `${path}${separator}ws_key=${apiKey}`;
+          //       console.log(`Image proxy: ${req.url} -> ${proxyReq.path}`);
+          //     });
+          //   }
+          // },
           '/api': {
             target: env.VITE_URL_API ?? "http://localhost/prestashop",
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/,''),
-          //     configure: (proxy, options) => {
-          // proxy.on('proxyReq', (proxyReq, req, res) => {
-          //   // Ajoute l'authentification Basic au proxy depuis les variables d'env
-          //   const apiKey = process.env.VITE_API_KEY;
-          //   if (apiKey) {
-          //     const credentials = Buffer.from(`${apiKey}:`).toString('base64');
-          //     proxyReq.setHeader('Authorization', `Basic ${credentials}`);
-          //   }
-          // });
-          // },
-        },
+            rewrite: (path) => path.replace(/^\/api/, ''),
+            configure: (proxy) => {
+              
+              proxy.on('proxyReq', (proxyReq) => {
+                const apiKey = env.VITE_WS_KEY;
+                // console.log("api key ",apiKey)
+                const creds = Buffer.from(`${apiKey}:`).toString('base64');
+                proxyReq.setHeader('Authorization', `Basic ${creds}`);
+              });
+            },
+          },
       },
     },
   };
@@ -48,7 +47,7 @@ export default defineConfig(({ mode }) => {
 
 // import { defineConfig } from 'vite'
 // import react from '@vitejs/plugin-react'
-
+//http://localhost:5173/api/customer_threads?display=%5Bid%5D
 // const WS_KEY = 'A4F2RV1ZS88ZYA6DS4QSIRFACSB8XEYB'; 
 
 // export default defineConfig({

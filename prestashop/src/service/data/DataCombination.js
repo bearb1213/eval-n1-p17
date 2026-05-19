@@ -207,7 +207,7 @@ async function saveCombinations(combinations) {
             const savedCombination = await saveCombination({
                 id_product : combination.id_product,
                 minimal_quantity : 1,
-                price : (combination.price).toFixed(5) ,
+                price : (combination.price).toFixed(6) ,
                 wholesale_price : combination.wholesale_price ,
                 available_date : combination.available_date,
                 associations : combination.associations

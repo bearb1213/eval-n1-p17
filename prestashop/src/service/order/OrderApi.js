@@ -43,6 +43,34 @@ async function getOrderByCustomerId(id) {
         throw e;
     }
 }
+async function getOrderByOrderState(ids) {
+    try{
+        let filterValue;
+        if (!Array.isArray(ids)) {
+            filterValue = ids;
+        } else if (ids.length === 0) {
+            filterValue = "[]";
+        } else {
+            filterValue = `[${ids.join("|")}]`;
+        }
+        const result = await ApiAction(
+            apiUrl ,
+            "GET" ,
+            {
+                "display":"full",
+                "filter[current_state]": filterValue
+            }
+        )
+        const json = xmlToJson.parse(result);
+        const orders = json.prestashop.orders.order;
+        // console.log(orders);
+
+        return Array.isArray(orders) ? orders : orders ? [orders] : [];
+    } catch (e) {
+        console.log(e)
+        throw e;
+    }
+}
 
 async function deleteOrder(id) {
     id = parseInt(id);
@@ -107,8 +135,8 @@ async function saveOrder(order) {
                 order: order
             }
         });
-        console.log("Order XML:");
-        console.log(orderXml);
+        // console.log("Order XML:");
+        // console.log(orderXml);
         const result = await ApiAction(
             apiUrl ,
             "POST" ,
@@ -172,6 +200,7 @@ async function patchOrder(order) {
 export {
     getAllOrders , 
     getOrderByCustomerId,
+    getOrderByOrderState ,
     deleteOrder, 
     getAllIdOrders, 
     deleteAllOrders , 

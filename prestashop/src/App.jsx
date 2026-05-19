@@ -10,6 +10,7 @@ import Reinitialisation from './page/admin/data/Reinitialisation';
 import UploadFile from './page/admin/data/UploadFile';
 import AdminListing from './page/admin/data/AdminListing';
 import StockUpdate from './page/admin/data/StockUpdate';
+import ProfitByCategory from './page/admin/ProfitByCategory';
 
 import ListOrder from './page/admin/order/ListOrder';
 
@@ -53,6 +54,9 @@ function App() {
                 </Route>
                 <Route path='stock'>
                   <Route index element={<StockUpdate />} />
+                </Route>
+                <Route path='statistics'>
+                  <Route index element={<ProfitByCategory />} />
                 </Route>
             </Route>
         </Routes>

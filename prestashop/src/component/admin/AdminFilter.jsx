@@ -53,6 +53,12 @@ export default function AdminFilter() {
             path:"/admin/stock" ,
             isOpenable: false,
         }
+        ,
+        {
+            name: "Statistics",
+            path: "/admin/statistics",
+            isOpenable: false,
+        }
 
     ];
 

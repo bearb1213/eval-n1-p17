@@ -1,7 +1,8 @@
-import { saveCart , updateCart } from "./CartApi";
+import { saveCart , updateCart , getCartById } from "./CartApi";
 import { saveOrder } from "../order/OrderApi";
 import { saveOrderHistory } from "../order/OrderHistoryApi";
 import { getAllIdAddresses } from "../customer/AddressApi";
+import { getProducts } from "../product/ProductService";
 const currencyId = 1;
 const langId = 1; 
 const carrierId = 1;
@@ -97,9 +98,9 @@ async function createOrder(customer ,idGuest, idCart ,cart , products ){
                 product_quantity : item.qty,
                 product_name : item.productname, 
                 product_attribute_id : item.comboId,
-                product_price : parseFloat((price * item.qty)).toFixed(5),
-                unit_price_tax_excl : parseFloat((price)).toFixed(5),
-                unit_price_tax_incl : parseFloat((item.price).toFixed(5)).toFixed(5),
+                product_price : parseFloat((price * item.qty)).toFixed(6),
+                unit_price_tax_excl : parseFloat((price)).toFixed(6),
+                unit_price_tax_incl : parseFloat((item.price).toFixed(6)).toFixed(6),
                 product_reference : item.reference,
                 id_customization: 0
             }
@@ -119,19 +120,19 @@ async function createOrder(customer ,idGuest, idCart ,cart , products ){
             current_state : idState,
             module : module,
             payment : "Manual",
-            total_products : parseFloat(prixHT).toFixed(5),
-            total_products_wt : parseFloat(prixTTC).toFixed(5),
+            total_products : parseFloat(prixHT).toFixed(6),
+            total_products_wt : parseFloat(prixTTC).toFixed(6),
             total_shipping : 0,
             total_shipping_tax_incl : 0,
             total_shipping_tax_excl : 0,
-            total_paid : parseFloat(prixTTC).toFixed(5),
-            total_paid_tax_incl : parseFloat(prixTTC).toFixed(5),
-            total_paid_tax_excl : parseFloat(prixHT).toFixed(5),
+            total_paid : parseFloat(prixTTC).toFixed(6),
+            total_paid_tax_incl : parseFloat(prixTTC).toFixed(6),
+            total_paid_tax_excl : parseFloat(prixHT).toFixed(6),
             total_discounts_tax_excl: 0,
             total_discounts_tax_incl: 0,
             total_wrapping_tax_excl: 0,
             total_wrapping_tax_incl: 0,
-            total_paid_real: parseFloat(prixTTC).toFixed(5),
+            total_paid_real: parseFloat(prixTTC).toFixed(6),
             conversion_rate: 1,
             secure_key : customer?.secure_key || "",
             date_add : now,
@@ -143,11 +144,11 @@ async function createOrder(customer ,idGuest, idCart ,cart , products ){
             }
         }
         const result = await saveOrder(order);
-        const orderHistory = {
-            id_order : result.id,
-            id_order_state : 2,
-        };
-        await saveOrderHistory(orderHistory);
+        // const orderHistory = {
+        //     id_order : result.id,
+        //     id_order_state : 2,
+        // };
+        // await saveOrderHistory(orderHistory);
 
         return result;
     } catch (e) {
@@ -182,7 +183,23 @@ function formatDateSQL(date = new Date()) {
   );
 }
 
+
+
+
+async function createOrderWithButton (idCart) {
+    try {
+        const cart = await getCartById(idCart);
+        console.log("Cart récupéré pour la création de commande : ", cart);
+        const products = await getProducts();
+        console.log("Produits récupérés pour la création de commande : ", products);
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
 export { 
     handleCart ,
-    createOrder
+    createOrder ,
+    createOrderWithButton,
 };

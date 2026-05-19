@@ -24,6 +24,79 @@ async function getAllStockMouvement() {
         throw e;
     }
 }
+async function getStockMouvementPositif(){
+    try{
+        const result = await ApiAction(
+            apiUrl ,
+        "GET" ,
+        {
+            "display":"full",
+            "filter[sign]":"1"
+        }
+        );
+        const json = xmlToJson.parse(result);
+        const stock_mvts = (json.prestashop.stock_mvts.stock_mvt);
+        // console.log(stock_mvts);
+        return stock_mvts;
+    } catch (e) {
+        console.log(e)
+        throw e;
+    }
+}
+async function deleteStockMouvement(id) {
+    id = parseInt(id);
+    try {
+        const result = await ApiAction(
+            apiUrl+"/"+id ,
+            "DELETE"
+        );
+        const json = xmlToJson.parse(result);
+        return json.prestashop;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
+async function getAllIdStockMovements() {
+    try{
+        const result = await ApiAction(
+            apiUrl ,
+            "GET" ,
+            {"display":"[id]"}
+        );
+        const json = xmlToJson.parse(result);
+        const stock_mvts = json.prestashop.stock_mvts;
+        console.log(stock_mvts);
+
+        return stock_mvts;
+    } catch (e) {
+        console.log(e)
+        throw e;
+    }
+}
+
+async function deleteAllStockMovements() {
+    try {
+        const stock_mvts = await getAllIdStockMovements();
+        const ids = Array.isArray(stock_mvts.stock_mvt)
+            ? stock_mvts.stock_mvt.map(s => s.id)
+            : stock_mvts.stock_mvt && Object.keys(stock_mvts.stock_mvt).length > 0
+            ? [stock_mvts.stock_mvt.id]
+            : [];
+        console.log("IDs to delete:", ids);
+        for (const id of ids) {
+            try {
+                const rep = await deleteStockMouvement(id);
+                console.log(`Deleted stock movement with id ${id}:`, rep);
+            } catch (e) {
+                console.log(`Error deleting stock movement with id ${id}:`, e);
+            }
+        }
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
 
 async function saveStockMouvement(stockMouvement) {
     try {
@@ -55,7 +128,7 @@ async function patchStockMouvement(stockMouvement) {
                 stock_mvt: stockMouvement,
             }
         });
-        console.log("Stock Movement XML:", stockMouvementXml);
+        // console.log("Stock Movement XML:", stockMouvementXml);
         const result = await ApiAction(
             apiUrl ,
             "PATCH" ,
@@ -95,5 +168,8 @@ export {
     saveStockMouvement,
     patchStockMouvement,
     getAllStockMouvement,
+    getStockMouvementPositif,
+    deleteAllStockMovements,
     getStockMouvementByIdStock,
+    deleteStockMouvement,
 }

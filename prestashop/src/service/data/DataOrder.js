@@ -17,18 +17,34 @@ const colAdresse = "adresse";
 const colAchat = "achat";
 const colEtat = "etat";
 
+const etat = [
+    {
+        id : 6,
+        name :"annulé" 
+    }, 
+    {
+        id: 5,
+        name : "livré"
+    } , 
+    {
+        id :11,
+        name : "paiement accepté"
+    }
+    
+]
+
 async function getOrders(file , products , carts , customers , addresses , combinations , stock) {
     const mvtStock = [];
-    const orderStates = await getOrderStates();
+    // const orderStates = await getOrderStates();
     // console.log("orderStates" , orderStates);
-    const orders = await createOrder(file , products , carts , customers , addresses , combinations , orderStates , mvtStock);
+    const orders = await createOrder(file , products , carts , customers , addresses , combinations , mvtStock);
     // console.log("orders" , orders);
     const savedOrders = await saveOrders(orders , stock , mvtStock);
     // console.log("savedOrders" , savedOrders);
     return savedOrders;
 }
 
-async function createOrder(file , products , carts , customers , addresses , combinations , orderStates , mvtStock) {
+async function createOrder(file , products , carts , customers , addresses , combinations ,  mvtStock) {
     const retour = [];
     for(const item of file) {
         // console.log("item" , item);
@@ -38,13 +54,16 @@ async function createOrder(file , products , carts , customers , addresses , com
         // console.log("customerFound" , customerFound);
         if(!customerFound) continue ;
 
-        const cartFound = carts.find(c => c.name === item[colAchat] && c.id_customer === customerFound.id);
+        const dateTrim = item[colDate].trim()  ;
+        // convertir la deuxième date (jj/mm/aaaa)
+        const [jour, mois, annee] = dateTrim.split("/");
+        const dateToCompare = `${annee}-${mois}-${jour} 00:00:00`;
+        const cartFound = carts.find(c => c.name === item[colAchat] && c.id_customer === customerFound.id && (c.date_add) == dateToCompare);
         // console.log("cartFound" , cartFound);
         if(!cartFound) continue ;
-    
-        const orderStateFound = orderStates.find(os => os.name.trim() === item[colEtat].toLowerCase().trim());
-        // console.log("orderStateFound" , orderStateFound);
-        if(!orderStateFound) continue ;
+        
+        const orderStateFound = etat.find(e=> e.name.trim().toLowerCase() === item[colEtat].trim().toLowerCase());
+        if(!orderStateFound) continue;
 
         const addressFound = addresses.find(a => a.address1 === item[colAdresse]);
         // console.log("addressFound" , addressFound);
@@ -69,19 +88,19 @@ async function createOrder(file , products , carts , customers , addresses , com
             id_shop_group : 1,
             module : module,
             payment : "Manual",
-            total_products : parseFloat(prix_ht).toFixed(5),
-            total_products_wt : parseFloat(prix_ttc).toFixed(5),
+            total_products : parseFloat(prix_ht).toFixed(6),
+            total_products_wt : parseFloat(prix_ttc).toFixed(6),
             total_shipping : 0,
             total_shipping_tax_incl : 0,
             total_shipping_tax_excl : 0,
-            total_paid : parseFloat(prix_ttc).toFixed(5),
-            total_paid_tax_incl : parseFloat(prix_ttc).toFixed(5),
-            total_paid_tax_excl : parseFloat(prix_ht).toFixed(5),
+            total_paid : parseFloat(prix_ttc).toFixed(6),
+            total_paid_tax_incl : parseFloat(prix_ttc).toFixed(6),
+            total_paid_tax_excl : parseFloat(prix_ht).toFixed(6),
             total_discounts_tax_excl: 0,
             total_discounts_tax_incl: 0,
             total_wrapping_tax_excl: 0,
             total_wrapping_tax_incl: 0,
-            total_paid_real: orderStateFound.id===2 || orderStateFound.id==="2" ? parseFloat(prix_ttc).toFixed(5) : 0,
+            total_paid_real: orderStateFound.id===2 || orderStateFound.id==="2" ? parseFloat(prix_ttc).toFixed(6) : 0,
             conversion_rate: 1,
             secure_key : customerFound.secure_key,
             date_add : cartFound.date_add,
@@ -136,9 +155,9 @@ async function createOrderRow(cart , products , combinations , mvtStock) {
             product_quantity : item.quantity,
             product_name : productFound ? productFound.name : "Unknown Product",
             product_attribute_id : item.id_product_attribute,
-            product_price : parseFloat((price * item.quantity).toFixed(5)).toFixed(5),
-            unit_price_tax_excl : parseFloat((price)).toFixed(5),
-            unit_price_tax_incl : parseFloat((price * (1 + (productFound.tax.rate / 100))).toFixed(5)).toFixed(5),
+            product_price : parseFloat((price * item.quantity).toFixed(6)).toFixed(6),
+            unit_price_tax_excl : parseFloat((price)).toFixed(6),
+            unit_price_tax_incl : parseFloat((price * (1 + (productFound.tax.rate / 100))).toFixed(6)).toFixed(6),
             product_reference : productFound.reference,
             id_customization: 0
         });
@@ -165,55 +184,59 @@ async function saveOrders(orders , stock , mvtStock) {
         try {
             const savedOrder = await saveOrder(order);
             savedOrders.push({...order , id : savedOrder.id});
-            await saveOrderHistory({
-                id_order : savedOrder.id,
-                id_order_state : order.current_state, 
-            });
-            await patchOrder({
-                id: savedOrder.id,
-                date_add: order.date_add,
-                date_upd : order.date_add,
-                invoice_date: order.invoice_date,
-                id_address_delivery : order.id_address_delivery,
-                id_address_invoice : order.id_address_invoice,
-            });
-            if (order.current_state === 2 || order.current_state === "2") {
-                const stockUpdates = mvtStock[index];
-                console.log("Stock updates for order:", stockUpdates);
-                for(const update of stockUpdates) {
-                    const stockItem = stock.find(s => 
-                        (
-                            s.id_product === update.id_product 
-                            || s.id_product["#text"] === update.id_product
-                        ) 
-                        && 
-                        (
-                            s.id_product_attribute === update.id_product_attribute
-                            || s.id_product_attribute["#text"] === update.id_product_attribute
-                        )
-                    );
-                    
-                    const obj = await saveStockMouvement({
-                        id_product: update.id_product,
-                        id_product_attribute: update.id_product_attribute,
-                        id_employee: 1,
-                        id_warehouse: 1,
-                        id_order: savedOrder.id,
-                        id_stock: stockItem ? stockItem.id : 0,
-                        price_te: 1,
-                        id_stock_mvt_reason : 12 ,
-                        sign : -1,
-                        
-                        physical_quantity : update.quantity<0 ? update.quantity* -1 : update.quantity,
-                        date_add: order.date_add
-                    })
-                    await patchStockMouvement({
-                        id: obj.id,
-                        date_add: order.date_add,
-                    });
+            if (order.current_state === 6 || order.current_state === 5) {
 
-                }
+                await saveOrderHistory({
+                    id_order : savedOrder.id,
+                    id_order_state : order.current_state, 
+                    date_add : order.date_add,
+                });
+                await patchOrder({
+                    id: savedOrder.id,
+                    date_add: order.date_add,
+                    date_upd : order.date_add,
+                    invoice_date: order.invoice_date,
+                    id_address_delivery : order.id_address_delivery,
+                    id_address_invoice : order.id_address_invoice,
+                });
             }
+            // if (order.current_state === 2 || order.current_state === "2") {
+            //     const stockUpdates = mvtStock[index];
+            //     console.log("Stock updates for order:", stockUpdates);
+            //     for(const update of stockUpdates) {
+            //         const stockItem = stock.find(s => 
+            //             (
+            //                 s.id_product === update.id_product 
+            //                 || s.id_product["#text"] === update.id_product
+            //             ) 
+            //             && 
+            //             (
+            //                 s.id_product_attribute === update.id_product_attribute
+            //                 || s.id_product_attribute["#text"] === update.id_product_attribute
+            //             )
+            //         );
+                    
+            //         const obj = await saveStockMouvement({
+            //             id_product: update.id_product,
+            //             id_product_attribute: update.id_product_attribute,
+            //             id_employee: 1,
+            //             id_warehouse: 1,
+            //             id_order: savedOrder.id,
+            //             id_stock: stockItem ? stockItem.id : 0,
+            //             price_te: 1,
+            //             id_stock_mvt_reason : 12 ,
+            //             sign : -1,
+                        
+            //             physical_quantity : update.quantity<0 ? update.quantity* -1 : update.quantity,
+            //             date_add: order.date_add
+            //         })
+            //         await patchStockMouvement({
+            //             id: obj.id,
+            //             date_add: order.date_add,
+            //         });
+
+            //     }
+            // }
             
         } catch (e) {
             console.log(e);

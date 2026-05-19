@@ -35,6 +35,7 @@ import { deleteAllWeightRanges } from "../product/WeightRangeApi";
 import { deleteAllDeliveries } from "../supplier/DeliverieApi.js";
 import { deleteAllCarriers } from "../order/CarrierApi";
 import { deleteAllAddresses } from "../customer/AddressApi";
+import { deleteAllStockMovements } from "../stock/StockMouvementApi.js";
 
 // import { saveCategory , getCategoryNameAndId } from "../category/CategoryApi";
 import { getCategories } from "./DataCategory";
@@ -93,7 +94,8 @@ async function deleteAllData(setFonctionCalled) {
             {name : "Delete All Weight Ranges", func : deleteAllWeightRanges},
             {name : "Delete All Deliveries", func : deleteAllDeliveries},
             {name : "Delete All Carriers", func : deleteAllCarriers},
-            {name : "Delete All Addresses", func : deleteAllAddresses}
+            {name : "Delete All Stock Movements", func : deleteAllStockMovements},
+            {name : "Delete All Addresses", func : deleteAllAddresses},
         ]
         for (const f of fonctions) {
             await f.func();

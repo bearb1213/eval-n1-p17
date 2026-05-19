@@ -49,7 +49,7 @@ async function chargeProducts(taxes , categories , optionValues , options , comb
                                     ? product.associations.stock_availables.stock_available 
                                     : [product.associations.stock_availables.stock_available] ) 
                                     : []).map(sa => sa.id);
-            const stockFormatted = stockId.map(saId => {
+            const stockFormatted = stockId.map(saId => {    
                 return stock.find(sa => String(sa.id) === String(saId));
             });
             

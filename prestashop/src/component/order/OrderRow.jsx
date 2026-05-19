@@ -1,6 +1,9 @@
 import { Fragment, useState } from "react";
 import OrderDetails from "./OrderDetails";
 import OrderStateBadge from "./OrderStateBadge";
+import {saveOrderHistory} from "../../service/order/OrderHistoryApi"
+import { createOrderWithButton } from "../../service/cart/CartService"; 
+
 
 export default function OrderRow({
   order,
@@ -10,15 +13,55 @@ export default function OrderRow({
   onChangeState,
   isAdmin = false,
 }) {
-  const [isEditingState, setIsEditingState] = useState(false);
   const clientName = order.customer
     ? `${order.customer.firstname} ${order.customer.lastname}`
-    : "Inconnu";
-  const stateName = order.orderState?.name || "Inconnu";
+    : "Guest";
+  let stateName = order.orderState?.name || "Inconnu";
+  const isCartState = stateName === "Dans le panier";
+  const isClosedState = stateName === "Annulé" || stateName === "Livré";
+  const isRemotePaymentAccepted = stateName === "Paiement à distance accepté";
 
-  const currentStateId = String(
-    order.orderState?.id ?? order.current_state ?? ""
-  );
+  const handleOrder = async (event , idOrder) => {
+    // event.stopPropagation();
+    try {
+      await createOrderWithButton(idOrder);
+    } catch (error) {
+      console.error("Failed to create order", error);
+      alert("Erreur lors de la création de la commande : " + error.message);
+    }
+    alert("Commander "+idOrder);
+  };
+
+  const handleCancel = async (event, idOrder) => {
+    // event.stopPropagation();
+    try {
+      await saveOrderHistory({
+        id_order: idOrder,
+        id_order_state: 6,
+      });
+      stateName = "Annulé";
+      // alert(`cancel ${idOrder}`);
+    } catch (error) {
+      console.error("Failed to cancel order", error);
+    }
+  };
+
+  const handleDeliver = async (event, idOrder) => {
+    // event.stopPropagation();
+    try {
+      await saveOrderHistory({
+        id_order: idOrder,
+        id_order_state: 5,
+      });
+      // window.local
+      let stateName = "Livré";
+      alert(`Deliver ${idOrder}`);
+
+    } catch (error) {
+      console.error("Failed to deliver order", error);
+    }
+  };
+
   return (
     <Fragment>
       <tr
@@ -41,41 +84,43 @@ export default function OrderRow({
         </td>
         <td className="px-4 py-3">
           <div className="flex flex-col gap-2">
-            {!isEditingState  && (
+            <div className="flex items-center gap-2">
+              <OrderStateBadge stateName={stateName} />
+            </div>
+            {!isClosedState && isAdmin && (
               <div className="flex items-center gap-2">
-                <OrderStateBadge stateName={stateName} />
-                {isAdmin && order.is_order &&  (
-                  <button
-                    type="button"
-                    className="text-xs text-blue-600 hover:text-blue-800"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setIsEditingState(true);
-                    }}
-                  >
-                    Changer
-                  </button>
+                
+                {isRemotePaymentAccepted && (
+                  <>
+                    <button
+                      type="button"
+                      className="rounded border border-red-500 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                      onClick={(e)=> {handleCancel(e,order.id)}}
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded border border-green-500 px-2 py-1 text-xs font-medium text-green-600 hover:bg-green-50"
+                      onClick={(e)=> {handleDeliver(e,order.id)}}
+                    >
+                      Livrer
+                    </button>
+                  </>
                 )}
               </div>
             )}
-            {isEditingState && (
-              <select
-                className="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700"
-                value={currentStateId}
-                onClick={(event) => event.stopPropagation()}
-                onChange={(event) => {
-                  event.stopPropagation();
-                  onChangeState(order.id, event.target.value);
-                  setIsEditingState(false);
-                }}
-                onBlur={() => setIsEditingState(false)}
-              >
-                {stateOptions.map((state) => (
-                  <option key={state.id} value={String(state.id)}>
-                    {state.name}
-                  </option>
-                ))}
-              </select>
+            {isCartState && (
+              <div className="flex items-center gap-2">
+
+                  <button
+                    type="button"
+                    className="rounded border border-blue-500 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50"
+                    onClick={(e)=> {handleOrder(e,order.id)}}
+                  >
+                    Commander
+                  </button>
+              </div>
             )}
           </div>
         </td>

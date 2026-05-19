@@ -84,13 +84,16 @@ async function saveOrderHistory(orderHistory) {
         const orderHistoryXml = await jsonToXml.build({
             prestashop: {
                 "@_xmlns:xlink": "http://www.w3.org/1999/xlink",
-                order_history: orderHistory
+                // order_history: orderHistory
+                order_state_update : orderHistory
             }
         });
         // console.log("Order History XML:");
         // console.log(orderHistoryXml);
+        const url = "/order_state_update";
         const result = await ApiAction(
-            apiUrl ,
+            // apiUrl ,
+            url,
             "POST" ,
             {},
             orderHistoryXml,

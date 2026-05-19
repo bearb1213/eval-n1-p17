@@ -1,4 +1,4 @@
-import { getAllOrders , getOrderByCustomerId } from "./OrderApi";
+import { getAllOrders , getOrderByCustomerId , getOrderByOrderState } from "./OrderApi";
 import { getAllCustomers } from "../customer/CustomerApi";
 import { getAllCarts , getAllCartsByCustomerId } from "../cart/CartApi";
 import { getAllOrderStates } from "./OrderStateApi";
@@ -34,7 +34,7 @@ async function getOrders(){
     }
 }
 async function getOrdersByCustomerId(customerId){
-try {
+    try {
         const orders = await chargeOrderByCustomerId(customerId);
         const customers = await getAllCustomers();
         const carts = await getAllCartsByCustomerId(customerId);
@@ -55,6 +55,27 @@ try {
         const combinedData = [...orderData, ...modifiedCart];
         console.log("combinedData" , combinedData);
         return combinedData;
+
+        // return orderData;    
+    } catch (error) {
+        throw error;
+    }
+}
+async function getOrderLiverPayer(){
+    try {
+        const orders = await chargeOrderLiverPayer();
+        const customers = await getAllCustomers();
+        const carts = await getAllCarts();
+        const orderStates = await getAllOrderStates();
+        const products = await getProducts();
+
+        // console.log("orders dans getOrders " , orders);
+        // console.log("customers" , customers);
+        // console.log("carts" , carts);
+        // console.log("orderStates" , orderStates);
+        const orderData = await modifyOrder(orders , customers , carts , orderStates);   
+        
+        return orderData;
 
         // return orderData;    
     } catch (error) {
@@ -118,6 +139,35 @@ async function chargeOrderByCustomerId(customerId){
         throw error;
     }
 }
+async function chargeOrderLiverPayer(){
+
+    try {
+        const orders = await getOrderByOrderState([2,11,5]);
+        console.log("orders dans change " , orders);
+        return orders.map(order => {
+            return {
+                id : order.id,
+                id_address : order.id_address_delivery["#text"] ? order.id_address_delivery["#text"] : order.id_address_invoice["#text"]? order.id_address_invoice["#text"] : 0,
+                id_cart : order.id_cart["#text"],
+                id_customer : order.id_customer["#text"],
+                current_state : order.current_state["#text"],
+                invoice_date : order.invoice_date,
+                date_add : order.date_add,
+                secure_key : order.secure_key,
+                is_order : true,
+                total_paid : order.total_paid,
+                total_paid_tax_incl : order.total_paid_tax_incl,
+                total_paid_tax_excl : order.total_paid_tax_excl,
+                total_paid_real : order.total_paid_real,
+                total_can_paid : order.total_paid,
+                reference : order.reference,
+                order_row : Array.isArray(order.associations.order_rows.order_row) ? order.associations.order_rows.order_row : [order.associations.order_rows.order_row]
+            }
+        });
+    } catch (error) {
+        throw error;
+    }
+}
 
 async function modifyOrder(orders , customers , carts , orderStates){
     try {
@@ -127,12 +177,12 @@ async function modifyOrder(orders , customers , carts , orderStates){
             const orderStateFound = orderStates.find(orderState => orderState.id === order.current_state);
             return {
                 ...order,
-                customer : {
+                customer : customerFound ? {
                     id : customerFound.id,
                     firstname : customerFound.firstname,
                     lastname : customerFound.lastname,
                     email : customerFound.email
-                } ,
+                } : null ,
                 cart : {
                     id : cartFound.id,
                     carts : Array.isArray(cartFound.associations.cart_rows.cart_row) ? cartFound.associations.cart_rows.cart_row : [cartFound.associations.cart_rows.cart_row]
@@ -207,7 +257,7 @@ async function modifyCart(carts , customers , products){
                 }
             }).filter(row => row !== null);
             return {
-                id : "IsPanier" + cart.id,
+                id : cart.id,
                 id_address : 0,
                 id_cart : cart.id,
                 id_customer : cart.id_customer["#text"],
@@ -248,5 +298,6 @@ async function modifyCart(carts , customers , products){
 export {
     getOrders,
     changeStateOrder,
-    getOrdersByCustomerId
+    getOrdersByCustomerId,
+    getOrderLiverPayer,
 };

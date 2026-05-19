@@ -38,7 +38,7 @@ async function createProducts(file1, categories , taxes) {
             reference: item[colRef],
             available_date : date,
             wholesale_price : parseFloat(item[colPrixAchat].replace(',', '.')),
-            price : price.toFixed(5), 
+            price : price.toFixed(6), 
             id_tax_rules_group : tax.id_tax_rules_group ,
             state: 1,   
             on_sale: 1,

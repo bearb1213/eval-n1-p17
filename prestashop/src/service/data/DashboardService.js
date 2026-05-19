@@ -1,8 +1,8 @@
-import { getOrders } from "../order/OrderService";
+import { getOrderLiverPayer } from "../order/OrderService";
 
 async function getDashboardData() {
     try {
-        const orders = await getOrders();
+        const orders = await getOrderLiverPayer();
         return buildDashboardStats(orders);
     } catch (error) {
         console.log(error);
