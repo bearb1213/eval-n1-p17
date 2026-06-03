@@ -7,6 +7,7 @@ export default function NavBar({
                                 onToggleCart, 
                                 onToggleLogin , 
                                 onRefresh , 
+                                handleRemoveStock,
     }) {
     return (
     <nav className="w-full bg-white shadow-md">
@@ -40,6 +41,15 @@ export default function NavBar({
           >
             Actualiser
           </a>
+          <button
+          type="button"
+          onClick={handleRemoveStock}
+          className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
+          >
+            Remove stock
+          </button>
+          
+
         </div>
         )} {!isLoggedIn && (
         <div className="flex items-center gap-3">
@@ -57,6 +67,14 @@ export default function NavBar({
           >
             Actualiser
           </button>
+          <button
+          type="button"
+          onClick={handleRemoveStock}
+          className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
+          >
+            Remove stock
+          </button>
+          
         </div>
         )}
       </div>

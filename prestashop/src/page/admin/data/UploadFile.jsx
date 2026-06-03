@@ -14,6 +14,8 @@ export default function UploadFile() {
     });
     const [disabled, setDisabled] = useState(true);
 
+    const [isImport , setIsImport] = useState(true);
+
     const [loading, setLoading] = useState(false);
 
     const allFile = () => {
@@ -57,7 +59,7 @@ export default function UploadFile() {
     const handleSubmit = async (e) => {
         try {
             setLoading(true);
-            const res = await UploadFileApi(files);
+            const res = await UploadFileApi(files , isImport);
             alert("Files uploaded successfully!");
         } catch (error) {
             alert("An error occurred while uploading files: " + error.message);
@@ -66,6 +68,10 @@ export default function UploadFile() {
         }
         // console.log("in components :",files);
         // console.log(res);
+    }
+
+    const handleCheckboxChange = (e) =>{
+        setIsImport(!isImport);
     }
     
     useEffect(() => {0
@@ -150,7 +156,18 @@ export default function UploadFile() {
                     onChange={handleFileChange4}
                 />
                 </div>
-
+                <div className="flex items-center gap-3 mb-6">
+                    <input
+                    type="checkbox"
+                    id="reinitialiser"
+                    checked={isImport}               // coché = bouton activé
+                    onChange={handleCheckboxChange}
+                    className="w-5 h-5 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 focus:ring-2"
+                    />
+                    <label htmlFor="reinitialiser" className="text-gray-700 text-sm font-medium cursor-pointer select-none">
+                    Importer les images
+                    </label>
+                </div>
                 {/* Bouton valider */}
                 <button
                 disabled={disabled}

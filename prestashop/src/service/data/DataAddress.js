@@ -21,11 +21,11 @@ async function createAddresses(file) {
     return uniqueAddresses.map((address) => {
         return {
             id_country : countryId,
-            alias : address,
-            firstname : address,
-            lastname : address,
+            alias : address.replaceAll(/[^a-zA-Z ]/g, ""),
+            firstname : address.replaceAll(/[^a-zA-Z ]/g, ""),
+            lastname : address.replaceAll(/[^a-zA-Z ]/g, ""),
             address1 : address,
-            city : address,
+            city : address.replaceAll(/[^a-zA-Z ]/g, ""),
         };
     });
 }
@@ -34,6 +34,7 @@ async function saveAddresses(addresses) {
     const savedAddresses = [];
     for (const address of addresses) {
         try {
+            console.log("address ",address);
             const savedAddress = await saveAddress(address);
             savedAddresses.push({ ...address, id: savedAddress.id });
         } catch (error) {

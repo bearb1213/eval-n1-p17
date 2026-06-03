@@ -191,15 +191,15 @@ async function saveOrders(orders , stock , mvtStock) {
                     id_order_state : order.current_state, 
                     date_add : order.date_add,
                 });
-                await patchOrder({
-                    id: savedOrder.id,
-                    date_add: order.date_add,
-                    date_upd : order.date_add,
-                    invoice_date: order.invoice_date,
-                    id_address_delivery : order.id_address_delivery,
-                    id_address_invoice : order.id_address_invoice,
-                });
             }
+            await patchOrder({
+                id: savedOrder.id,
+                date_add: order.date_add,
+                date_upd : order.date_add,
+                invoice_date: order.invoice_date,
+                id_address_delivery : order.id_address_delivery,
+                id_address_invoice : order.id_address_invoice,
+            });
             // if (order.current_state === 2 || order.current_state === "2") {
             //     const stockUpdates = mvtStock[index];
             //     console.log("Stock updates for order:", stockUpdates);

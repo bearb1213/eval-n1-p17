@@ -8,6 +8,8 @@ export default function AdminDashboard() {
     const [grandTotal, setGrandTotal] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
 
     useEffect(() => {
         let isMounted = true;
@@ -16,7 +18,7 @@ export default function AdminDashboard() {
             try {
                 setLoading(true);
                 setError(null);
-                const data = await getDashboardData();
+                const data = await getDashboardData({ startDate, endDate });
                 if (!isMounted) return;
                 setDailyStats(data.dailyStats || []);
                 setTotalsByState(data.totalsByState || []);
@@ -34,7 +36,7 @@ export default function AdminDashboard() {
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [startDate, endDate]);
 
     if (loading) {
         return (
@@ -59,6 +61,36 @@ export default function AdminDashboard() {
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h1 className="text-xl font-semibold text-gray-800">Admin Dashboard</h1>
                 <p className="mt-1 text-sm text-gray-500">Total general: {formatAmount(grandTotal)}</p>
+                <div className="mt-4 flex flex-wrap items-end gap-4 text-sm">
+                    <label className="flex flex-col gap-1">
+                        <span className="text-gray-600">Start date</span>
+                        <input
+                            type="date"
+                            className="rounded border border-gray-300 px-3 py-2"
+                            value={startDate}
+                            onChange={event => setStartDate(event.target.value)}
+                        />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                        <span className="text-gray-600">End date</span>
+                        <input
+                            type="date"
+                            className="rounded border border-gray-300 px-3 py-2"
+                            value={endDate}
+                            onChange={event => setEndDate(event.target.value)}
+                        />
+                    </label>
+                    <button
+                        type="button"
+                        className="rounded border border-gray-300 px-3 py-2 text-gray-700"
+                        onClick={() => {
+                            setStartDate("");
+                            setEndDate("");
+                        }}
+                    >
+                        Reset
+                    </button>
+                </div>
             </section>
 
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

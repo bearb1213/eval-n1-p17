@@ -20,6 +20,10 @@ import Connexion from './page/customer/Connexion';
 import ShopLayout from './component/ShopLayout';
 import AdminDashboard from './page/admin/AdminDashboard';
 
+import OrderDuplicate from './page/order/OrderDuplicate'
+
+import ExportCSVButton from './page/test/ExportCSVButton'
+
 import {
   BrowserRouter,
   Route,
@@ -39,11 +43,13 @@ function App() {
                 <Route path=":productId" element={<ProductDetail />} />
               </Route>
               <Route path="/customers" element={<Connexion />} />
+              <Route path="/order/:id" element={<OrderDuplicate />} />
             </Route>
 
             <Route path="/loginAdmin" element={<LoginAdmin />} />
             <Route path="/admin" element={<AdminFilter />} >
                 <Route path="dashboard" element={<AdminDashboard />} />
+                {/* <Route path="export" element={<ExportCSVButton />} /> */}
                 <Route path="data" >
                   <Route path="clean" element={<Reinitialisation />} />
                   <Route path="upload" element={<UploadFile />} />

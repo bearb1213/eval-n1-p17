@@ -112,9 +112,9 @@ async function deleteAllData(setFonctionCalled) {
 
 
 
-async function UploadFile(file) { 
+async function UploadFile(file , isImport) { 
     try {
-        
+        console.log("is import :" , isImport);
         const file1 = file.fichier1;
         const file2 = file.fichier2;
         const file3 = file.fichier3;
@@ -124,7 +124,7 @@ async function UploadFile(file) {
         const header2 = file.headerfichier2;
         const header3 = file.headerfichier3;
 
-        await test(file1, file2, file3 , file4, header1, header2, header3);
+        await test(file1, file2, file3 , file4, header1, header2, header3,isImport);
         // console.log("File 1:", file1);
         // console.log("File 2:", file2);
         // console.log("File 3:", file3);
@@ -140,7 +140,9 @@ async function UploadFile(file) {
         console.log("products with id :", products);
 
     // FILE 4 : images
-        await createImageFromZip(file.fichier4, products, console.log, console.log);
+        if (isImport) {
+            await createImageFromZip(file.fichier4, products, console.log, console.log);
+        }
         
     // FILE 2 : combinations
         // options 
@@ -184,11 +186,13 @@ async function UploadFile(file) {
 }
 
 
-async function test(file1, file2, file3 , file4 ,header1, header2, header3) {
+async function test(file1, file2, file3 , file4 ,header1, header2, header3,isImport) {
     if(!file1 ) throw new Error("File 1 is required");
     if(!file2 ) throw new Error("File 2 is required");
     if(!file3 ) throw new Error("File 3 is required");
-    if(!file4 ) throw new Error("File 4 is required");
+    if(isImport){
+        if(!file4) throw new Error("File 4 is required");
+    }
     if(!header1 ) throw new Error("Header 1 is required");
     if(!header2 ) throw new Error("Header 2 is required");
     if(!header3 ) throw new Error("Header 3 is required");

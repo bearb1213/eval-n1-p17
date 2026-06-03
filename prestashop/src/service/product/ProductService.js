@@ -3,7 +3,8 @@ import { getAllProductOptionValues } from "./ProductOptionValueApi";
 import { getAllProductOptions } from "./ProductOptionApi";
 import { getAllCombinations } from "../combination/CombinationApi";
 import { getAllCategories } from "../category/CategoryApi";
-import {getAllStockAvailable} from "../stock/StockAvailableApi";
+import {getAllStockAvailable , updateStockAvailable } from "../stock/StockAvailableApi";
+import {saveStockMouvement} from "../stock/StockMouvementApi"
 import { getTax } from "../tax/TaxService";
 
 async function getProducts() {
@@ -182,9 +183,10 @@ async function chargeStock(){
             return {
                 id : stock.id,  
                 id_product : stock.id_product["#text"],
-                id_product_attribute : stock.id_product_attribute !== 0 || stock.id_product_attribute !== "0"
+                id_product_attribute : stock.id_product_attribute !== 0 || stock.id_product_attribute !== "0" || stock.id_product_attribute === undefined
                                         ? stock.id_product_attribute["#text"] : 0  ,
                 quantity : stock.quantity,
+                stockXml : stock,
             }
         });
         return stockAvailable;
@@ -193,7 +195,165 @@ async function chargeStock(){
     }
 }
 
+async function removeStock (category , nb ) {
+    try{
+        const nbInt = Number(nb);
+        const pds = await getProducts();
+        // console.log("pds = ",pds)
+        let nbRetirer = 0
+        let nbRetirerTheorique = 0;
+        const listRemove =[];
+        for (const pd of pds) {
+            if (category!==pd.category.name) {
+                continue;
+            }
+            console.log("product" , pd);
+            for(const st of pd.stock) {
+                let combName = "-";
+                if (pd.stock.length!==1) {
+                    const optVFound = pd.combinations.find((op)=> op.id===st.id_product_attribute)
+                    if(optVFound){
+                        console.log("optV Found " , optVFound);
+                        combName=optVFound.option_values[0].name;
+                    }
+                }
+                let produitModifer = {
+                    name : pd.name,
+                    comb : combName,
+                    remove : 0 ,
+                    add : 0 , 
+                    before : 0,
+                    after : 0,
+                }
+                // console.log("stock ", st)
+                
+                const toRemove = Number(st.quantity) < nbInt ? Number(st.quantity) : nbInt
+                const reste = Number(st.quantity) - Number(toRemove)
+                
+                produitModifer.before = st.quantity;
+                produitModifer.remove = toRemove;
+                produitModifer.after = reste;
+
+                if (pd.stock.length !== 1 && (st.id_product_attribute===0 || st.id_product_attribute===undefined)) {
+                    // console.log("stock Tsy tokony : ",pd.stock)
+                    continue;
+                }
+                nbRetirer+=toRemove;
+                nbRetirerTheorique+=nbInt;
+                // console.log("toRemove" , toRemove , "reste ",reste);
+                // console.log("nbRetirer ",nbRetirer)
+                const updated = await updateStockAvailable(st.id,{
+                    ... st.stockXml , quantity: reste
+                }) 
+                console.log(updated);
+
+                listRemove.push(produitModifer);
+            }
+        }
+        return [nbRetirer , nbRetirerTheorique , listRemove];
+    } catch (e) {
+        throw e;
+    }
+}
+
+async function addStock(category , nb ,lim) {
+    try{
+        const nbInt = Number(nb);
+        let limite = 0;
+        if(lim || lim !== "") {
+            limite = Number(lim);
+        } else {
+            limite = 1_000_000_000;
+        }
+        const pds = await getProducts();
+        // console.log("pds = ",pds)
+        let nbAdd = 0
+        let nbAddTheorique = 0;
+        let listAdd = [];
+        for (const pd of pds) {
+            if (category!==pd.category.name) {
+                continue;
+            }
+            console.log("product" , pd)
+            for(const st of pd.stock) {
+                // console.log("stock ", st)
+                if (pd.stock.length !== 1 && (st.id_product_attribute===0 || st.id_product_attribute===undefined)) {
+                    // console.log("stock Tsy tokony : ",pd.stock)
+                    continue;
+                }
+                if(Number(st.quantity) >= limite ){
+                    nbAddTheorique+=nbInt;
+                    let combNameQ = "-";
+                    if (pd.stock.length!==1) {
+                        const optVFound = pd.combinations.find((op)=> op.id===st.id_product_attribute)
+                        if(optVFound){
+                            console.log("optV Found " , optVFound);
+                            combNameQ=optVFound.option_values[0].name;
+                        }
+                    }
+                    listAdd.push(
+                        {
+                            name : pd.name ,
+                            comb : combNameQ ,
+                            remove : 0,
+                            add : 0 ,
+                            before : st.quantity,
+                            after : st.quantity,
+                        }
+                    )
+                    continue
+                }
+
+                let combName = "-";
+                if (pd.stock.length!==1) {
+                    const optVFound = pd.combinations.find((op)=> op.id===st.id_product_attribute)
+                    if(optVFound){
+                        console.log("optV Found " , optVFound);
+                        combName=optVFound.option_values[0].name;
+                    }
+                }
+                let produitModifer = {
+                    name : pd.name,
+                    comb : combName,
+                    remove : 0 ,
+                    add : 0 , 
+                    before : 0,
+                    after : 0,
+                }
+
+
+                const valueAfterAdd = Number(st.quantity) + nbInt;
+                const realAdd = valueAfterAdd > limite ? limite-Number(st.quantity) : valueAfterAdd-(st.quantity);
+                nbAdd+=Number(realAdd);
+                nbAddTheorique+=nbInt;
+                const reste = Number(st.quantity) + Number(realAdd);
+                console.log("added , ", realAdd);
+                console.log("after calcule" , reste);
+
+                produitModifer.before = st.quantity;
+                produitModifer.add = realAdd;
+                produitModifer.after = reste;
+
+                // console.log("toRemove" , toRemove , "reste ",reste);
+                // console.log("nbRetirer ",nbRetirer)
+                const updated = await updateStockAvailable(st.id,{
+                    ... st.stockXml , quantity: reste
+                }) 
+                console.log(updated);
+                listAdd.push(produitModifer)
+            }
+        }
+        return [nbAdd , nbAddTheorique ,listAdd];
+    } catch (e) {
+        throw e;
+    }
+}
+
+
 export { 
     getProducts, 
     chargeOption,
+    chargeCategory,
+    removeStock,
+    addStock
 };

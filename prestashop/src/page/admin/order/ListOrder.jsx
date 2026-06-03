@@ -18,6 +18,9 @@ export default function ListOrder() {
     async function fetchOrders() {
       try {
         const ordersData = await getOrders();
+        ordersData.sort((a,b) => {
+          return new Date(b.date_add) - new Date(a.date_add);
+        })
         setOrders(ordersData);
       } catch (error) {
         console.error("Error fetching orders:", error);

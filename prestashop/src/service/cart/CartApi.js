@@ -124,8 +124,8 @@ async function saveCart(cart){
                 }
             }
         );
-        // console.log("XML to send : \n");
-        // console.log(cartXml);
+        console.log("XML to send : \n");
+        console.log(cartXml);
         const result = await ApiAction(
             apiUrl ,
             "POST" ,

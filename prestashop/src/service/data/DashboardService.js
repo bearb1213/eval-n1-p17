@@ -1,17 +1,20 @@
 import { getOrderLiverPayer } from "../order/OrderService";
 
-async function getDashboardData() {
+async function getDashboardData(dateRange = {}) {
     try {
         const orders = await getOrderLiverPayer();
-        return buildDashboardStats(orders);
+
+        return buildDashboardStats(orders, dateRange);
     } catch (error) {
         console.log(error);
         throw error;
     }
 }
 
-function buildDashboardStats(orders) {
+function buildDashboardStats(orders, dateRange = {}) {
     const normalizedOrders = Array.isArray(orders) ? orders : [];
+    const startDate = dateRange.startDate || "";
+    const endDate = dateRange.endDate || "";
     const dailyMap = new Map();
     const stateMap = new Map();
     let grandTotal = 0;
@@ -19,6 +22,18 @@ function buildDashboardStats(orders) {
     normalizedOrders.forEach(order => {
         const dateKey = extractDateKey(order.date_add);
         const amount = toNumber(order.total_paid_tax_incl ?? order.total_paid);
+
+        if (startDate || endDate) {
+            if (!dateKey) {
+                return;
+            }
+            if (startDate && dateKey < startDate) {
+                return;
+            }
+            if (endDate && dateKey > endDate) {
+                return;
+            }
+        }
 
         const stateKey = order.orderState?.name || String(order.current_state || "Unknown");
         if (dateKey) {

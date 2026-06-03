@@ -20,7 +20,7 @@ export default function OrderRow({
   const isCartState = stateName === "Dans le panier";
   const isClosedState = stateName === "Annulé" || stateName === "Livré";
   const isRemotePaymentAccepted = stateName === "Paiement à distance accepté";
-
+  const isRemoteDelivered = stateName === "Livré";
   const handleOrder = async (event , idOrder) => {
     // event.stopPropagation();
     try {
@@ -110,7 +110,17 @@ export default function OrderRow({
                 )}
               </div>
             )}
-            {isCartState && (
+            {!isAdmin && (isRemotePaymentAccepted || isRemoteDelivered) && (
+              <div className="flex item-center">
+                <a
+                    className="rounded border border-blue-500 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50"
+                    href={`/order/${order.id}`}
+                >
+                    Duplique
+                </a>
+              </div>
+            )}
+            {/* {isCartState && (
               <div className="flex items-center gap-2">
 
                   <button
@@ -121,7 +131,7 @@ export default function OrderRow({
                     Commander
                   </button>
               </div>
-            )}
+            )} */}
           </div>
         </td>
         <td className="px-4 py-3 text-center">

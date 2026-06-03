@@ -8,6 +8,8 @@ import OrderTable from './order/OrderTable';
 import EmptyState from './order/EmptyState';
 import { createOrder } from '../service/cart/CartService';
 import {handleCart} from '../service/cart/CartService'
+import MdpAdmin from './admin/MdpAdmin';
+import PopupCategory from './admin/PopupCategory';
 
 export default function ShopLayout() {
     const [cartOpen, setCartOpen] = useState(false);
@@ -21,6 +23,9 @@ export default function ShopLayout() {
     const [ordersError, setOrdersError] = useState("");
     const [cartItems, setCartItems] = useState([]);
     const [loadingOrderCreate, setLoadingOrderCreate] = useState(false);
+    const [showMdp , setShowMdp] = useState(false);
+    const [showPopup , setShowPopup] = useState(false);
+
     const navigate = useNavigate();
     useEffect(() => {
         const storedCustomer = localStorage.getItem("customer");
@@ -192,12 +197,19 @@ export default function ShopLayout() {
             localStorage.removeItem("cart");
             localStorage.removeItem("cartId");
             sessionStorage.setItem("reload", "reload");
-            navigate("/products");
+            navigate("/products?reload=2");
         } catch (error) {   
             alert("Erreur lors de la création de la commande.");
         } finally {
             setLoadingOrderCreate(false);
         }
+    }
+    const handleRemoveStock = () => {
+        setShowMdp(!showMdp);
+        console.log(showMdp);
+    }
+    const handleShowPopup = () => {
+        setShowPopup(!showPopup)
     }
 
   return (
@@ -208,7 +220,22 @@ export default function ShopLayout() {
         onToggleCart={handleToggleCart}
         onToggleLogin={handleToggleLogin}
         onRefresh={handleRefraish}
+        handleRemoveStock={handleRemoveStock}
       />
+      {showMdp && (
+        <MdpAdmin
+            handleMdp={handleRemoveStock}
+            handleShowPopup={handleShowPopup}
+        />
+      )}
+      {showPopup && (
+        <PopupCategory
+            handleClose={handleShowPopup}
+        />
+      )
+      
+      }
+      
       <CartDrawer
         open={cartOpen}
         items={cartItems}

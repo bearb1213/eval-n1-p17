@@ -46,6 +46,7 @@ export default function ProductList() {
     fetchProducts();
   }, []);
 
+  
   const categories = useMemo(() => {
     const names = products
       .map((product) => product.category?.name)

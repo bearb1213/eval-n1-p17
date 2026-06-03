@@ -5,6 +5,19 @@ import { getAllOrderStates } from "./OrderStateApi";
 import { saveOrderHistory } from "./OrderHistoryApi";
 import { getProducts } from "../product/ProductService";
 
+import { saveCart } from "../cart/CartApi";
+import { saveOrder } from "./OrderApi";
+
+import { normalizeId } from "../util/Utils";
+
+const currencyId = 1;
+const langId = 1; 
+const carrierId = 1;
+const idShop = 1;
+const idState = 2 ;
+const module = "ps_cashondelivery";
+
+
 async function getOrders(){
     try {
         const orders = await chargeOrder();
@@ -58,6 +71,17 @@ async function getOrdersByCustomerId(customerId){
 
         // return orderData;    
     } catch (error) {
+        throw error;
+    }
+}
+async function getOrderByCustomerIdAndId(customerId, id){
+    try {
+        const orders = await getOrdersByCustomerId(customerId);
+        console.log("customer id ",customerId)
+        console.log("orders dans getOrderByCustomerIdAndId " , orders);
+        return orders.find(o => String(o.id)===id )
+    } catch (error) {
+        console.log(error);
         throw error;
     }
 }
@@ -295,9 +319,90 @@ async function modifyCart(carts , customers , products){
     }
 }
 
+
+async function createOrderWoutCart(order , idCustomer ){
+    try {
+        const cartRows = order.cart.carts.map(cartRow => {
+            return {
+                id_address_delivery: normalizeId(cartRow.id_address_delivery) ,
+                id_customization : normalizeId(cartRow.id_customization) ,
+                id_product : normalizeId(cartRow.id_product) ,
+                id_product_attribute : normalizeId(cartRow.id_product_attribute) ,
+                quantity : cartRow.quantity
+            }
+        });
+        const savedCart = await saveCart({
+            id_customer : idCustomer || order.id_customer ,
+            id_currency: currencyId,
+            id_lang: langId,
+            id_shop : 1,
+            id_shop_group : 1,
+            associations : {
+                cart_rows : {
+                    cart_row : cartRows
+                }
+            }
+        })
+        console.log("savedCart" , savedCart);
+        const orderRows = order.order_row.map(orderRow => {
+            return{
+                product_name: orderRow.product_name,
+                product_price: orderRow.product_price.toFixed(6),
+                product_attribute_id : normalizeId(orderRow.product_attribute_id),
+                product_id: normalizeId(orderRow.product_id),
+                product_quantity : orderRow.product_quantity ,
+                product_reference : orderRow.product_reference,
+                unit_price_tax_excl : orderRow.unit_price_tax_excl.toFixed(6),
+                unit_price_tax_incl : orderRow.unit_price_tax_incl.toFixed(6),
+            }
+        });
+        const orderToSave =  ({
+            id_address_delivery : normalizeId(order.id_address),
+            id_address_invoice : normalizeId(order.id_address),
+            id_currency: currencyId,
+            id_cart : savedCart.id,
+            id_customer : idCustomer || (order.id_customer),
+            id_lang: langId,
+            id_shop : 1,
+            id_shop_group : 1,
+            id_carrier : carrierId,
+            module : module,
+            payment : order.payment ?? "Manual" ,
+            total_products : order.total_paid_tax_excl.toFixed(6),
+            total_products_wt : order.total_paid_tax_incl.toFixed(6),
+            total_shipping : 0,
+            total_shipping_tax_incl : 0,
+            total_shipping_tax_excl : 0,
+            total_paid : order.total_paid_tax_incl.toFixed(6),
+            total_paid_tax_incl : order.total_paid_tax_incl.toFixed(6),
+            total_paid_tax_excl : order.total_paid_tax_excl.toFixed(6),
+            total_paid_real: order.total_paid_tax_incl.toFixed(6),
+            conversion_rate: 1,
+            secure_key : order.secure_key,
+            date_add : new Date().toISOString().slice(0, 19).replace('T', ' '),
+            invoice_date : new Date().toISOString().slice(0, 19).replace('T', ' '),
+            associations : {
+                order_rows : {
+                    order_row : orderRows
+                }
+            }
+        });
+        // console.log("order to save" , orderToSave);
+        const savedOrder = await saveOrder(orderToSave);
+        // console.log("order to save" , savedOrder);
+        // const retour = await saveOrderHistory(savedOrder);
+        return savedOrder;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
 export {
     getOrders,
     changeStateOrder,
     getOrdersByCustomerId,
     getOrderLiverPayer,
+    getOrderByCustomerIdAndId,
+    createOrderWoutCart,
 };

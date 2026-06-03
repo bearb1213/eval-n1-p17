@@ -46,26 +46,39 @@ async function cartComposition(file , products, optionValues ,combinations , cus
                 }
                 return {
                     id_product : productFound.id ,
-                    quantity : quantity,
+                    quantity : Number(quantity),
                     id_product_attribute : combinationFound ? combinationFound.id : 0,
                     id_address_delivery : 0 ,
                     id_customization : 0
                 }
             });
-            
+            const cartLineReduces = [];
+            cartLineObjects.forEach(clo => {
+                const index = cartLineReduces.findIndex(cl => cl && cl.id_product === clo.id_product && cl.id_product_attribute=== clo.id_product_attribute);
+                if (index!==-1) {
+                    cartLineReduces[index].quantity += clo.quantity;
+                } else {
+                    cartLineReduces.push(clo);
+                }
+            });
+
+
             const date = line[colDate].split("/");
             const dateFormated = `${date[2]}-${date[1]}-${date[0]} 00:00:00`;
 
             const cart = [];
-            for(const cartLineObject of cartLineObjects){
-                if(cartLineObject){
+            for(const cartLineObject of cartLineReduces){
+                if(cartLineObject && cartLineObject.quantity > 0){
                     cart.push(cartLineObject);
                 }
             }
 
 
             const customerFound = customers.find(c => c.email === line[colEmail])
-            if(customerFound){
+
+            console.log("Customer found for email ", line[colEmail] , " : ", customerFound);
+            console.log("Cart for line ", line[colAchat] , " : ", cart);
+            if(customerFound && cart.length > 0){
 
                 carts.push({
                     name: name , 

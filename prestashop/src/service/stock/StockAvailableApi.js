@@ -55,7 +55,7 @@ async function updateStockAvailable(id, stockAvailable) {
                 stock_available: stockAvailable,
             }
         });
-        // console.log("Stock Available XML:", stockAvailableXml);
+        console.log("Stock Available XML:", stockAvailableXml);
         const result = await ApiAction(
             apiUrl+"/"+id ,
             "PUT" ,
